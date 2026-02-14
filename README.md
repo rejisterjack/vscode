@@ -46,7 +46,7 @@ npm install
 npm run compile
 
 # Run the editor
-./scripts/code.sh
+./scripts/fewstepaway.sh
 ```
 
 ### Reference Repositories
