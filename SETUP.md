@@ -1,128 +1,146 @@
-# FewStepAway - Project Setup
+# FewStepAway - Development Setup
 
-This document describes the project setup completed for FewStepAway.
+## Prerequisites
 
-## ✅ Completed Setup Tasks
+- Node.js 20.x (see `.nvmrc`)
+- npm 10.x
+- Python 3.x (for some dependencies)
+- Git
 
-### 1. Project Metadata Updated
-- **package.json**
-  - Name: `fewstepaway-dev`
-  - License: `Apache-2.0`
-  - Author: `FewStepAway Team`
-  - Repository: Updated to `rejisterjack/fewstepaway`
+## Quick Setup
 
-- **product.json**
-  - Name: `FewStepAway`
-  - Full Name: `FewStepAway - AI Native Code Editor`
-  - Application Name: `fewstepaway`
-  - Data Folder: `.fewstepaway`
-  - License: Apache-2.0
-  - All branding identifiers updated
+### 1. Clone and Install
 
-### 2. Reference Repositories Cloned
+```bash
+git clone https://github.com/rejisterjack/fewstepaway.git
+cd fewstepaway
+npm install
+```
 
-The `references/` folder contains:
+### 2. Build
 
-1. **cline** - https://github.com/cline/cline
-   - Popular VS Code extension for AI coding
-   - Study: Chat interface, multi-provider support, tool calling
+```bash
+# Full build
+npm run compile
 
-2. **Roo-Code** - https://github.com/RooVetGit/Roo-Code
-   - Advanced AI coding assistant
-   - Study: Enhanced chat, mode-based AI, context management
+# Watch mode (for development)
+npm run watch
+```
 
-3. **anthropic-cookbook** - https://github.com/anthropics/anthropic-cookbook
-   - Patterns for building with Claude
-   - Study: Prompt engineering, tool use, best practices
+### 3. Run Development Version
 
-4. **python-sdk** (MCP) - https://github.com/modelcontextprotocol/python-sdk
-   - Model Context Protocol SDK
-   - Study: MCP server patterns, tool interfaces
+```bash
+# macOS/Linux
+./scripts/code.sh
 
-**Note**: KiloCode repository was not found (may be private or renamed).
+# Windows
+./scripts/code.bat
+```
 
-### 3. Documentation Created
+## AI Development Setup
 
-- **README.md** - Main project documentation with vision, setup, and contribution guidelines
-- **references/README.md** - Documentation for reference repositories
-- **SETUP.md** - This file
+### 1. Configure AI Provider
 
-### 4. Dependencies
+Create `.env` file or configure via UI:
 
-- All Node.js dependencies are already installed (`node_modules/` exists)
-- Project is ready for development
+```bash
+# OpenAI
+export OPENAI_API_KEY="your-key"
 
-## 🚀 Next Steps
+# Anthropic
+export ANTHROPIC_API_KEY="your-key"
+```
 
-1. **Build the project**:
-   ```bash
-   npm run compile
-   ```
+### 2. Test AI Features
 
-2. **Run the editor**:
-   ```bash
-   ./scripts/code.sh
-   ```
+```bash
+# Run AI-specific tests
+npm run test-ai
 
-3. **Study reference implementations**:
-   ```bash
-   cd references/
-   ls -la
-   ```
+# Run all tests
+npm run test-node
+```
 
-4. **Start development**:
-   - Review the vision.md for product direction
-   - Study reference implementations for patterns
-   - Begin implementing AI-native features
+## Development Workflow
 
-## 📁 Project Structure
+### Branch Naming
+
+- `feature/ai-[feature-name]` - New AI features
+- `fix/ai-[bug-description]` - Bug fixes
+- `docs/[description]` - Documentation
+
+### Commit Messages
+
+Follow conventional commits:
+
+```
+feat(ai): add Anthropic provider support
+fix(completion): resolve ghost text flickering
+docs: update API documentation
+```
+
+### Testing
+
+```bash
+# Unit tests
+npm run test-node
+
+# AI module tests
+npm run test-ai
+
+# Linting
+npm run eslint
+
+# Type checking
+npm run compile-check-ts-native
+```
+
+## Project Structure
 
 ```
 fewstepaway/
-├── src/                    # Main source code (VS Code fork)
-├── extensions/             # Built-in extensions
-├── build/                  # Build scripts
-├── scripts/                # Development scripts
-├── references/             # Reference implementations
-│   ├── cline/             # Cline AI extension
-│   ├── Roo-Code/          # Roo Code AI assistant
-│   ├── anthropic-cookbook/# Claude patterns
-│   └── python-sdk/        # MCP SDK
-├── test/                   # Test suites
-├── cli/                    # CLI tools (Rust)
-├── package.json           # Project config
-├── product.json           # Product branding
-└── README.md              # Project docs
+├── src/vs/               # VS Code core
+│   ├── ai/              # 🎯 AI MODULE (our code)
+│   ├── base/            # Base utilities
+│   ├── editor/          # Editor components
+│   ├── workbench/       # Workbench UI
+│   └── platform/        # Platform abstractions
+├── docs/                # Documentation
+├── build/               # Build scripts
+└── scripts/             # Development scripts
 ```
 
-## 🔧 Development Commands
+## Common Issues
+
+### Build Errors
 
 ```bash
-# Compile
+# Clean build
+rm -rf out/
 npm run compile
 
-# Watch mode
-npm run watch
-
-# Run tests
-npm run test
-
-# Lint
-npm run eslint
-
-# Build for distribution
-npm run gulp vscode-darwin
-npm run gulp vscode-linux
-npm run gulp vscode-win32
+# Reset node_modules
+rm -rf node_modules
+npm install
 ```
 
-## 📝 Notes
+### Test Failures
 
-- This is a fork of VS Code with AI-native features planned
-- All Microsoft branding has been replaced with FewStepAway branding
-- Project is ready for active development
-- Reference implementations provide patterns for AI integration
+```bash
+# Update test snapshots
+npm run test-node -- --updateSnapshot
 
----
+# Run specific test
+npm run test-node -- --grep "test-name"
+```
 
-Setup completed: 2025-02-12
+## Resources
+
+- [Master Plan](./MASTER-PLAN.md) - Complete development roadmap
+- [Architecture Docs](./docs/architecture/)
+- [API Specs](./docs/api/)
+
+## Support
+
+- GitHub Issues: https://github.com/rejisterjack/fewstepaway/issues
+- Discussions: https://github.com/rejisterjack/fewstepaway/discussions
