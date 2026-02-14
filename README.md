@@ -1,78 +1,115 @@
-# Visual Studio Code - Open Source ("Code - OSS")
-[![Feature Requests](https://img.shields.io/github/issues/microsoft/vscode/feature-request.svg)](https://github.com/microsoft/vscode/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc)
-[![Bugs](https://img.shields.io/github/issues/microsoft/vscode/bug.svg)](https://github.com/microsoft/vscode/issues?utf8=✓&q=is%3Aissue+is%3Aopen+label%3Abug)
-[![Gitter](https://img.shields.io/badge/chat-on%20gitter-yellow.svg)](https://gitter.im/Microsoft/vscode)
+# FewStepAway - AI Native Code Editor
 
-## The Repository
+[![Vision](vision.md)](vision.md)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
 
-This repository ("`Code - OSS`") is where we (Microsoft) develop the [Visual Studio Code](https://code.visualstudio.com) product together with the community. Not only do we work on code and issues here, we also publish our [roadmap](https://github.com/microsoft/vscode/wiki/Roadmap), [monthly iteration plans](https://github.com/microsoft/vscode/wiki/Iteration-Plans), and our [endgame plans](https://github.com/microsoft/vscode/wiki/Running-the-Endgame). This source code is available to everyone under the standard [MIT license](https://github.com/microsoft/vscode/blob/main/LICENSE.txt).
+## 🚀 The Vision
 
-## Visual Studio Code
+**FewStepAway** is an open-source, AI-native code editor that feels like the future of development—where AI is woven into every interaction, not bolted on as an afterthought.
 
-<p align="center">
-  <img alt="VS Code in action" src="https://user-images.githubusercontent.com/35271042/118224532-3842c400-b438-11eb-923d-a5f66fa6785a.png">
-</p>
+Built by forking VS Code and embedding AI capabilities natively, creating an editor that is:
 
-[Visual Studio Code](https://code.visualstudio.com) is a distribution of the `Code - OSS` repository with Microsoft-specific customizations released under a traditional [Microsoft product license](https://code.visualstudio.com/License/).
+- **Fast** — No extension overhead, instant startup, responsive AI interactions
+- **Open** — Apache 2.0 license, community-driven, fully transparent
+- **Flexible** — Bring your own AI provider, use any model you prefer
+- **Familiar** — Full VS Code compatibility, existing extensions work seamlessly
 
-[Visual Studio Code](https://code.visualstudio.com) combines the simplicity of a code editor with what developers need for their core edit-build-debug cycle. It provides comprehensive code editing, navigation, and understanding support along with lightweight debugging, a rich extensibility model, and lightweight integration with existing tools.
+## 🎯 Key Differentiators
 
-Visual Studio Code is updated monthly with new features and bug fixes. You can download it for Windows, macOS, and Linux on [Visual Studio Code's website](https://code.visualstudio.com/Download). To get the latest releases every day, install the [Insiders build](https://code.visualstudio.com/insiders).
+| Dimension | FewStepAway | Market Standard |
+|-----------|--------------|-----------------|
+| **Integration Depth** | Native—AI is core to the editor | Extension—AI runs as add-on |
+| **Provider Freedom** | 500+ models, any provider | Locked to vendor's choice |
+| **Openness** | Fully open-source, Apache 2.0 | Closed-source or limited |
+| **Performance** | Optimized, stripped-down core | Bloated with legacy features |
+| **Community** | Community-driven development | Corporate-controlled roadmap |
 
-## Contributing
+## 🛠️ Development Setup
 
-There are many ways in which you can participate in this project, for example:
+### Prerequisites
 
-* [Submit bugs and feature requests](https://github.com/microsoft/vscode/issues), and help us verify as they are checked in
-* Review [source code changes](https://github.com/microsoft/vscode/pulls)
-* Review the [documentation](https://github.com/microsoft/vscode-docs) and make pull requests for anything from typos to additional and new content
+- **Node.js** (see `.nvmrc` for version)
+- **npm** or **yarn**
+- **Git**
 
-If you are interested in fixing issues and contributing directly to the code base,
-please see the document [How to Contribute](https://github.com/microsoft/vscode/wiki/How-to-Contribute), which covers the following:
+### Quick Start
 
-* [How to build and run from source](https://github.com/microsoft/vscode/wiki/How-to-Contribute)
-* [The development workflow, including debugging and running tests](https://github.com/microsoft/vscode/wiki/How-to-Contribute#debugging)
-* [Coding guidelines](https://github.com/microsoft/vscode/wiki/Coding-Guidelines)
-* [Submitting pull requests](https://github.com/microsoft/vscode/wiki/How-to-Contribute#pull-requests)
-* [Finding an issue to work on](https://github.com/microsoft/vscode/wiki/How-to-Contribute#where-to-contribute)
-* [Contributing to translations](https://aka.ms/vscodeloc)
+```bash
+# Clone the repository
+git clone https://github.com/rejisterjack/fewstepaway.git
+cd fewstepaway
 
-## Feedback
+# Install dependencies
+npm install
 
-* Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/vscode)
-* [Request a new feature](CONTRIBUTING.md)
-* Upvote [popular feature requests](https://github.com/microsoft/vscode/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc)
-* [File an issue](https://github.com/microsoft/vscode/issues)
-* Connect with the extension author community on [GitHub Discussions](https://github.com/microsoft/vscode-discussions/discussions) or [Slack](https://aka.ms/vscode-dev-community)
-* Follow [@code](https://x.com/code) and let us know what you think!
+# Build the project
+npm run compile
 
-See our [wiki](https://github.com/microsoft/vscode/wiki/Feedback-Channels) for a description of each of these channels and information on some other available community-driven channels.
+# Run the editor
+./scripts/code.sh
+```
 
-## Related Projects
+### Reference Repositories
 
-Many of the core components and extensions to VS Code live in their own repositories on GitHub. For example, the [node debug adapter](https://github.com/microsoft/vscode-node-debug) and the [mono debug adapter](https://github.com/microsoft/vscode-mono-debug) repositories are separate from each other. For a complete list, please visit the [Related Projects](https://github.com/microsoft/vscode/wiki/Related-Projects) page on our [wiki](https://github.com/microsoft/vscode/wiki).
+The `references/` folder contains valuable reference implementations:
 
-## Bundled Extensions
+- **cline** - Popular VS Code extension for AI coding
+- **Roo-Code** - Advanced AI coding assistant (formerly Roo Cline)
+- **anthropic-cookbook** - Patterns for building with Claude
+- **python-sdk** - Model Context Protocol (MCP) SDK
 
-VS Code includes a set of built-in extensions located in the [extensions](extensions) folder, including grammars and snippets for many languages. Extensions that provide rich language support (inline suggestions, Go to Definition) for a language have the suffix `language-features`. For example, the `json` extension provides coloring for `JSON` and the `json-language-features` extension provides rich language support for `JSON`.
+See [references/README.md](references/README.md) for details.
 
-## Development Container
+## 🏗️ Project Structure
 
-This repository includes a Visual Studio Code Dev Containers / GitHub Codespaces development container.
+```
+fewstepaway/
+├── src/                    # Main source code
+├── extensions/             # Built-in extensions
+├── build/                  # Build scripts and configuration
+├── scripts/                # Development and utility scripts
+├── references/             # Reference implementations
+├── test/                   # Test suites
+└── cli/                    # CLI tools (Rust)
+```
 
-* For [Dev Containers](https://aka.ms/vscode-remote/download/containers), use the **Dev Containers: Clone Repository in Container Volume...** command which creates a Docker volume for better disk I/O on macOS and Windows.
-  * If you already have VS Code and Docker installed, you can also click [here](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/microsoft/vscode) to get started. This will cause VS Code to automatically install the Dev Containers extension if needed, clone the source code into a container volume, and spin up a dev container for use.
+## 🎯 Core Features (Planned)
 
-* For Codespaces, install the [GitHub Codespaces](https://marketplace.visualstudio.com/items?itemName=GitHub.codespaces) extension in VS Code, and use the **Codespaces: Create New Codespace** command.
+- **AI Chat Interface** - Native chat with context-aware AI assistance
+- **Ghost Text** - Inline AI suggestions as you type
+- **Intelligent Refactoring** - Natural language code transformations
+- **Multi-Provider Support** - OpenAI, Anthropic, Google, AWS, OpenRouter, local models
+- **MCP Integration** - Standardized tool interfaces for AI agents
+- **Codebase Indexing** - Semantic search across your entire project
 
-Docker / the Codespace should have at least **4 Cores and 6 GB of RAM (8 GB recommended)** to run a full build. See the [development container README](.devcontainer/README.md) for more information.
+## 🤝 Contributing
 
-## Code of Conduct
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+### Development Workflow
 
-## License
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `npm run test`
+5. Submit a pull request
 
-Copyright (c) Microsoft Corporation. All rights reserved.
+## 📚 Documentation
 
-Licensed under the [MIT](LICENSE.txt) license.
+- [Product Vision](vision.md) - Full vision and roadmap
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute
+- [References](references/README.md) - Reference implementations
+
+## 📄 License
+
+Licensed under the [Apache License 2.0](LICENSE.txt).
+
+Copyright (c) FewStepAway Team and contributors.
+
+## 🙏 Acknowledgments
+
+This project is a fork of [Visual Studio Code](https://github.com/microsoft/vscode) by Microsoft. We are grateful for their excellent work on the foundation of this editor.
+
+---
+
+**FewStepAway** - *The editor AI-native development deserves.*

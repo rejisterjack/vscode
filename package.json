@@ -1,11 +1,11 @@
 {
-  "name": "code-oss-dev",
+  "name": "fewstepaway-dev",
   "version": "1.110.0",
   "distro": "68c946526275fa6c9bec4d4cfe1eb331f1062ee4",
   "author": {
-    "name": "Microsoft Corporation"
+    "name": "FewStepAway Team"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "./out/main.js",
   "type": "module",
   "private": true,
@@ -235,10 +235,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "https://github.com/rejisterjack/fewstepaway.git"
   },
   "bugs": {
-    "url": "https://github.com/microsoft/vscode/issues"
+    "url": "https://github.com/rejisterjack/fewstepaway/issues"
   },
   "optionalDependencies": {
     "windows-foreground-love": "0.6.1"
