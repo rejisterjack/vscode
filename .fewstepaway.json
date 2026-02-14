@@ -1,0 +1,44 @@
+{
+  "name": "FewStepAway Performance Config",
+  "version": "1.0.0",
+  "description": "Performance optimizations for FewStepAway",
+  "optimizations": {
+    "startup": {
+      "lazyLoadExtensions": true,
+      "deferNonEssentialServices": true,
+      "skipWelcomePage": true,
+      "restoreEditors": "none"
+    },
+    "runtime": {
+      "disableSmoothScrolling": true,
+      "reduceAnimation": true,
+      "optimizeTokenization": true,
+      "fastSearch": true
+    },
+    "memory": {
+      "limitUndoHistory": 50,
+      "clearConsoleOnStartup": true,
+      "disableLocalHistory": true
+    },
+    "features": {
+      "telemetry": false,
+      "experiments": false,
+      "surveys": false,
+      "releaseNotes": false,
+      "updateChecks": false
+    }
+  },
+  "excludedExtensions": [
+    "bat", "clojure", "coffeescript", "dart", "fsharp", "go",
+    "groovy", "handlebars", "hlsl", "ini", "java", "julia",
+    "lua", "objective-c", "perl", "php", "powershell", "pug",
+    "r", "ruby", "rust", "scala", "shaderlab", "swift", "vb",
+    "ipynb", "mermaid-chat-features", "simple-browser"
+  ],
+  "ai": {
+    "enabled": true,
+    "lazyLoad": true,
+    "defaultProvider": "openai",
+    "providers": ["openai", "anthropic", "ollama"]
+  }
+}
