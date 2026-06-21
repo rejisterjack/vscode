@@ -80,7 +80,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sandbox-runtime": "0.0.23",
-
     "@parcel/watcher": "^2.5.6",
     "@types/semver": "^7.5.8",
     "@vscode/codicons": "^0.0.45-7",
@@ -90,7 +89,6 @@
     "@vscode/policy-watcher": "^1.3.2",
     "@vscode/proxy-agent": "^0.38.0",
     "@vscode/ripgrep": "^1.15.13",
-    "@vscode/spdlog": "^0.15.7",
     "@vscode/sqlite3": "5.1.12-vscode",
     "@vscode/sudo-prompt": "9.3.2",
     "@vscode/tree-sitter-wasm": "^0.3.0",
@@ -118,7 +116,6 @@
     "native-keymap": "^3.3.5",
     "node-pty": "^1.2.0-beta.10",
     "open": "^10.1.2",
-
     "undici": "^7.18.2",
     "v8-inspect-profiler": "^0.1.1",
     "vscode-oniguruma": "1.7.0",
@@ -152,8 +149,7 @@
     "@typescript-eslint/utils": "^8.45.0",
     "@typescript/native-preview": "^7.0.0-dev.20260130",
     "@vscode/gulp-electron": "^1.38.2",
-
-
+    "@vscode/spdlog": "^0.15.8",
     "@vscode/test-cli": "^0.0.6",
     "@vscode/test-electron": "^2.4.0",
     "@vscode/test-web": "^0.0.76",
@@ -245,5 +241,24 @@
   },
   "optionalDependencies": {
     "windows-foreground-love": "0.6.1"
+  },
+  "allowScripts": {
+    "electron@39.5.2": true,
+    "es5-ext@0.10.63": true,
+    "fsevents@2.3.2": true,
+    "fsevents@1.2.13": true,
+    "husky@0.13.4": true,
+    "kerberos@2.1.1": true,
+    "native-is-elevated@0.9.0": true,
+    "native-keymap@3.3.9": true,
+    "node-pty@1.2.0-beta.10": true,
+    "@parcel/watcher@2.5.6": true,
+    "@playwright/browser-chromium@1.56.1": true,
+    "@vscode/deviceid@0.1.4": true,
+    "@vscode/policy-watcher@1.3.7": true,
+    "@vscode/native-watchdog@1.4.6": true,
+    "@vscode/spdlog@0.15.7": true,
+    "@vscode/sqlite3@5.1.12-vscode": true,
+    "@vscode/ripgrep@1.17.0": true
   }
 }
