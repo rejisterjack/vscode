@@ -1,4 +1,4 @@
-# FewStepAway - Quick Start Guide
+# FewStepsAway - Quick Start Guide
 
 ## 🚀 Get Started in 5 Minutes
 
@@ -13,7 +13,7 @@ npm --version
 
 ### 2. Install Dependencies
 ```bash
-cd fewstepaway
+cd fewstepsaway
 npm install
 ```
 
@@ -26,7 +26,7 @@ npm run compile
 npm run watch
 ```
 
-### 4. Run FewStepAway
+### 4. Run FewStepsAway
 ```bash
 # macOS/Linux
 ./scripts/code.sh
@@ -36,7 +36,7 @@ npm run watch
 ```
 
 ### 5. Configure AI Provider
-1. Open FewStepAway
+1. Open FewStepsAway
 2. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
 3. Type "AI: Open Settings"
 4. Enter your API key
@@ -157,8 +157,8 @@ npm run compile
 
 ## 📞 Support
 
-- **Issues**: https://github.com/rejisterjack/fewstepaway/issues
-- **Discussions**: https://github.com/rejisterjack/fewstepaway/discussions
+- **Issues**: https://github.com/rejisterjack/fewstepsaway/issues
+- **Discussions**: https://github.com/rejisterjack/fewstepsaway/discussions
 
 ---
 

@@ -1,9 +1,9 @@
 {
-  "name": "fewstepaway-dev",
+  "name": "fewstepsaway-dev",
   "version": "1.110.0",
   "distro": "68c946526275fa6c9bec4d4cfe1eb331f1062ee4",
   "author": {
-    "name": "FewStepAway Team"
+    "name": "FewStepsAway Team"
   },
   "license": "Apache-2.0",
   "main": "./out/main.js",
@@ -14,7 +14,7 @@
     "test-browser": "npx playwright install && node test/unit/browser/index.js",
     "test-browser-no-install": "node test/unit/browser/index.js",
     "test-node": "mocha test/unit/node/index.js --delay --ui=tdd --timeout=5000 --exit",
-    "test-extension": "fewstepaway-test",
+    "test-extension": "fewstepsaway-test",
     "test-build-scripts": "cd build && npm run test",
     "preinstall": "node build/npm/preinstall.ts",
     "postinstall": "node build/npm/postinstall.ts",
@@ -46,7 +46,7 @@
     "optimize": "node build/optimize-build.js",
     "rebrand": "bash scripts/rebrand.sh",
     "remove-ms-deps": "bash scripts/remove-ms-deps.sh",
-    "mixin-telemetry-docs": "echo 'Telemetry disabled in FewStepAway'",
+    "mixin-telemetry-docs": "echo 'Telemetry disabled in FewStepsAway'",
     "smoketest": "node build/lib/preLaunch.ts && cd test/smoke && npm run compile && node test/index.js",
     "smoketest-no-compile": "cd test/smoke && node test/index.js",
     "download-builtin-extensions": "node build/lib/builtInExtensions.ts",
@@ -238,10 +238,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/rejisterjack/fewstepaway.git"
+    "url": "https://github.com/rejisterjack/fewstepsaway.git"
   },
   "bugs": {
-    "url": "https://github.com/rejisterjack/fewstepaway/issues"
+    "url": "https://github.com/rejisterjack/fewstepsaway/issues"
   },
   "optionalDependencies": {
     "windows-foreground-love": "0.6.1"

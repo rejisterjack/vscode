@@ -1,7 +1,7 @@
 {
-  "name": "FewStepAway Performance Config",
+  "name": "FewStepsAway Performance Config",
   "version": "1.0.0",
-  "description": "Performance optimizations for FewStepAway",
+  "description": "Performance optimizations for FewStepsAway",
   "optimizations": {
     "startup": {
       "lazyLoadExtensions": true,

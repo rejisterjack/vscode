@@ -1,6 +1,6 @@
-# FewStepAway AI Module
+# FewStepsAway AI Module
 
-This directory contains the AI integration layer for FewStepAway - an AI-native code editor.
+This directory contains the AI integration layer for FewStepsAway - an AI-native code editor.
 
 ## Overview
 

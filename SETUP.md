@@ -1,4 +1,4 @@
-# FewStepAway - Development Setup
+# FewStepsAway - Development Setup
 
 ## Prerequisites
 
@@ -12,8 +12,8 @@
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/rejisterjack/fewstepaway.git
-cd fewstepaway
+git clone https://github.com/rejisterjack/fewstepsaway.git
+cd fewstepsaway
 npm install
 ```
 
@@ -98,7 +98,7 @@ npm run compile-check-ts-native
 ## Project Structure
 
 ```
-fewstepaway/
+fewstepsaway/
 ├── src/vs/               # VS Code core
 │   ├── ai/              # 🎯 AI MODULE (our code)
 │   ├── base/            # Base utilities
@@ -142,5 +142,5 @@ npm run test-node -- --grep "test-name"
 
 ## Support
 
-- GitHub Issues: https://github.com/rejisterjack/fewstepaway/issues
-- Discussions: https://github.com/rejisterjack/fewstepaway/discussions
+- GitHub Issues: https://github.com/rejisterjack/fewstepsaway/issues
+- Discussions: https://github.com/rejisterjack/fewstepsaway/discussions

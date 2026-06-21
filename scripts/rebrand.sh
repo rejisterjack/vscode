@@ -1,10 +1,10 @@
 #!/bin/bash
-# FewStepAway Rebranding Helper Script
-# Completes the rebranding from VS Code to FewStepAway
+# FewStepsAway Rebranding Helper Script
+# Completes the rebranding from VS Code to FewStepsAway
 
 set -e
 
-echo "🎨 FewStepAway Rebranding Script"
+echo "🎨 FewStepsAway Rebranding Script"
 echo "================================="
 echo ""
 
@@ -41,24 +41,24 @@ print_error() {
 print_section "Phase 1: Verifying Core Rebranding"
 
 # Check product.json
-if grep -q "FewStepAway" product.json; then
-    print_success "product.json has FewStepAway branding"
+if grep -q "FewStepsAway" product.json; then
+    print_success "product.json has FewStepsAway branding"
 else
-    print_error "product.json missing FewStepAway branding"
+    print_error "product.json missing FewStepsAway branding"
 fi
 
 # Check package.json
-if grep -q "fewstepaway" package.json; then
-    print_success "package.json has fewstepaway name"
+if grep -q "fewstepsaway" package.json; then
+    print_success "package.json has fewstepsaway name"
 else
-    print_error "package.json missing fewstepaway name"
+    print_error "package.json missing fewstepsaway name"
 fi
 
 # Check README
-if grep -q "FewStepAway" README.md; then
-    print_success "README.md has FewStepAway branding"
+if grep -q "FewStepsAway" README.md; then
+    print_success "README.md has FewStepsAway branding"
 else
-    print_error "README.md missing FewStepAway branding"
+    print_error "README.md missing FewStepsAway branding"
 fi
 
 # ============================================================================
@@ -110,7 +110,7 @@ ICON_FILES=(
 
 for icon in "${ICON_FILES[@]}"; do
     if [ -f "$icon" ]; then
-        if echo "$icon" | grep -q "fewstepaway"; then
+        if echo "$icon" | grep -q "fewstepsaway"; then
             print_success "Rebranded: $icon"
         else
             print_warning "Needs rebranding: $icon"
@@ -131,7 +131,7 @@ SCRIPTS=(
 
 for script in "${SCRIPTS[@]}"; do
     if [ -f "$script" ]; then
-        if echo "$script" | grep -q "fewstepaway"; then
+        if echo "$script" | grep -q "fewstepsaway"; then
             print_success "Rebranded: $script"
         else
             print_warning "Should rename: $script"
@@ -146,8 +146,8 @@ print_section "Rebranding Status Summary"
 
 echo ""
 echo "Core Rebranding: ✅ COMPLETE"
-echo "  - Product name: FewStepAway"
-echo "  - Package name: fewstepaway"
+echo "  - Product name: FewStepsAway"
+echo "  - Package name: fewstepsaway"
 echo "  - Documentation: Updated"
 echo ""
 echo "Pending Items:"

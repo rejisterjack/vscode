@@ -1,4 +1,4 @@
-# FewStepAway - Optimization Summary
+# FewStepsAway - Optimization Summary
 
 ## 🎯 Mission Accomplished: Blazing Fast AI Editor
 
@@ -8,7 +8,7 @@ We've transformed VS Code from a bloated IDE into a lean, mean, AI coding machin
 
 ## 📊 Before vs After
 
-| Metric | VS Code | FewStepAway | Improvement |
+| Metric | VS Code | FewStepsAway | Improvement |
 |--------|---------|-------------|-------------|
 | **Built-in Extensions** | 107 | ~20 | **-80%** |
 | **Bundle Size** | ~1.5GB | ~400MB | **-73%** |
@@ -37,7 +37,7 @@ We've transformed VS Code from a bloated IDE into a lean, mean, AI coding machin
   - Aggressive minification
   - Optimized webpack config
 
-- **`build/fewstepaway-config.js`** - Central configuration
+- **`build/fewstepsaway-config.js`** - Central configuration
   - Excluded extensions list
   - Disabled features
   - Essential extensions whitelist
@@ -51,7 +51,7 @@ We've transformed VS Code from a bloated IDE into a lean, mean, AI coding machin
   - Optimized search
   - Fast file watching
 
-- **`.fewstepaway.json`** - Editor configuration
+- **`.fewstepsaway.json`** - Editor configuration
   - Startup optimizations
   - Runtime optimizations
   - Memory management
@@ -223,13 +223,13 @@ npm run watch        # Watch mode
 #### Re-add Features
 ```bash
 # Install any extension
-fewstepaway --install-extension golang.go
-fewstepaway --install-extension ms-python.python
+fewstepsaway --install-extension golang.go
+fewstepsaway --install-extension ms-python.python
 ```
 
 #### Strip More
 ```javascript
-// Edit build/fewstepaway-config.js
+// Edit build/fewstepsaway-config.js
 EXCLUDED_EXTENSIONS.push('your-extension');
 ```
 
@@ -269,7 +269,7 @@ Experiment sync: 0 (vs periodic)
 
 ## 🎓 Philosophy
 
-### FewStepAway Design Principles
+### FewStepsAway Design Principles
 
 1. **No Bloat by Default**
    - Start minimal
@@ -317,7 +317,7 @@ Experiment sync: 0 (vs periodic)
 
 ## 🤝 Contributing
 
-Help make FewStepAway even faster:
+Help make FewStepsAway even faster:
 
 1. **Profile**: Find bottlenecks
 2. **Identify**: Spot bloat
@@ -344,7 +344,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## ✨ Results
 
-**FewStepAway is now:**
+**FewStepsAway is now:**
 - ✅ 3x faster startup
 - ✅ 40% less memory
 - ✅ 73% smaller bundle

@@ -1,4 +1,4 @@
-# FewStepAway - Blazing Fast Setup
+# FewStepsAway - Blazing Fast Setup
 
 ## ⚡ Quick Start for Maximum Speed
 
@@ -121,14 +121,14 @@ Add to `settings.json`:
 ### Re-add Features
 ```bash
 # Install any extension
-fewstepaway --install-extension <publisher.extension>
+fewstepsaway --install-extension <publisher.extension>
 
 # Example: Add Python support
-fewstepaway --install-extension ms-python.python
+fewstepsaway --install-extension ms-python.python
 ```
 
 ### Strip More
-Edit `build/fewstepaway-config.js`:
+Edit `build/fewstepsaway-config.js`:
 ```javascript
 EXCLUDED_EXTENSIONS.push('your-extension');
 ```
@@ -186,7 +186,7 @@ npm run gulp vscode -- --no-source-maps
 # VS Code size
 du -sh /Applications/Visual\ Studio\ Code.app/
 
-# FewStepAway size  
+# FewStepsAway size  
 du -sh out/Code-*-unsigned/
 
 # Startup comparison
@@ -211,6 +211,6 @@ Help us make it even faster:
 
 ---
 
-**FewStepAway: The AI editor that respects your time. ⚡**
+**FewStepsAway: The AI editor that respects your time. ⚡**
 
 *Fast by default. No compromises. No bloat.*

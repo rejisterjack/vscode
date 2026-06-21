@@ -1,10 +1,10 @@
 #!/bin/bash
-# FewStepAway Debloating Script
+# FewStepsAway Debloating Script
 # Removes bloatware to make the editor blazing fast
 
 set -e
 
-echo "🔥 FewStepAway Debloating Script"
+echo "🔥 FewStepsAway Debloating Script"
 echo "================================"
 echo ""
 
@@ -146,39 +146,39 @@ if [ -f "product.json" ]; then
     # Create minimal product.json without telemetry
     cat > product.json << 'EOF'
 {
-	"nameShort": "FewStepAway",
-	"nameLong": "FewStepAway - AI Native Code Editor",
-	"applicationName": "fewstepaway",
-	"dataFolderName": ".fewstepaway",
-	"win32MutexName": "fewstepaway",
+	"nameShort": "FewStepsAway",
+	"nameLong": "FewStepsAway - AI Native Code Editor",
+	"applicationName": "fewstepsaway",
+	"dataFolderName": ".fewstepsaway",
+	"win32MutexName": "fewstepsaway",
 	"licenseName": "Apache-2.0",
-	"licenseUrl": "https://github.com/rejisterjack/fewstepaway/blob/main/LICENSE.txt",
-	"serverLicenseUrl": "https://github.com/rejisterjack/fewstepaway/blob/main/LICENSE.txt",
+	"licenseUrl": "https://github.com/rejisterjack/fewstepsaway/blob/main/LICENSE.txt",
+	"serverLicenseUrl": "https://github.com/rejisterjack/fewstepsaway/blob/main/LICENSE.txt",
 	"serverGreeting": [],
 	"serverLicense": [],
 	"serverLicensePrompt": "",
-	"serverApplicationName": "fewstepaway-server",
-	"serverDataFolderName": ".fewstepaway-server",
-	"tunnelApplicationName": "fewstepaway-tunnel",
-	"win32DirName": "FewStepAway",
-	"win32NameVersion": "FewStepAway",
-	"win32RegValueName": "FewStepAway",
+	"serverApplicationName": "fewstepsaway-server",
+	"serverDataFolderName": ".fewstepsaway-server",
+	"tunnelApplicationName": "fewstepsaway-tunnel",
+	"win32DirName": "FewStepsAway",
+	"win32NameVersion": "FewStepsAway",
+	"win32RegValueName": "FewStepsAway",
 	"win32x64AppId": "{{D77B7E06-80BA-4137-BCF4-654B95CCEBC5}",
 	"win32arm64AppId": "{{D1ACE434-89C5-48D1-88D3-E2991DF85475}",
 	"win32x64UserAppId": "{{CC6B787D-37A0-49E8-AE24-8559A032BE0C}",
 	"win32arm64UserAppId": "{{3AEBF0C8-F733-4AD4-BADE-FDB816D53D7B}",
-	"win32AppUserModelId": "FewStepAway.Editor",
-	"win32ShellNameShort": "F&ewStepAway",
-	"win32TunnelServiceMutex": "fewstepaway-tunnelservice",
-	"win32TunnelMutex": "fewstepaway-tunnel",
-	"darwinBundleIdentifier": "ai.fewstepaway.editor",
+	"win32AppUserModelId": "FewStepsAway.Editor",
+	"win32ShellNameShort": "F&ewStepsAway",
+	"win32TunnelServiceMutex": "fewstepsaway-tunnelservice",
+	"win32TunnelMutex": "fewstepsaway-tunnel",
+	"darwinBundleIdentifier": "ai.fewstepsaway.editor",
 	"darwinProfileUUID": "47827DD9-4734-49A0-AF80-7E19B11495CC",
 	"darwinProfilePayloadUUID": "CF808BE7-53F3-46C6-A7E2-7EDB98A5E959",
-	"linuxIconName": "fewstepaway",
+	"linuxIconName": "fewstepsaway",
 	"licenseFileName": "LICENSE.txt",
-	"reportIssueUrl": "https://github.com/rejisterjack/fewstepaway/issues/new",
+	"reportIssueUrl": "https://github.com/rejisterjack/fewstepsaway/issues/new",
 	"nodejsRepository": "https://nodejs.org",
-	"urlProtocol": "fewstepaway",
+	"urlProtocol": "fewstepsaway",
 	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-cdn.net/insider/ef65ac1ba57f57f2a3961bfe94aa20481caca4c6/out/vs/workbench/contrib/webview/browser/pre/",
 	"builtInExtensions": [
 		{
@@ -189,7 +189,16 @@ if [ -f "product.json" ]; then
 		}
 	],
 	"enableTelemetry": false,
-	"enableExperiments": false
+	"enableExperiments": false,
+	"extensionsGallery": {
+		"serviceUrl": "https://open-vsx.org/vscode/gallery",
+		"itemUrl": "https://open-vsx.org/vscode/item",
+		"publisherUrl": "https://open-vsx.org/publisher/{publisher}",
+		"resourceUrlTemplate": "https://open-vsx.org/vscode/asset/{publisher}/{name}/{version}/{path}",
+		"extensionUrlTemplate": "https://open-vsx.org/vscode/asset/{publisher}/{name}/{version}/{path}",
+		"controlUrl": "",
+		"nlsBaseUrl": ""
+	}
 }
 EOF
     print_success "Stripped telemetry from product.json"
@@ -247,4 +256,4 @@ echo "  1. Run: npm install"
 echo "  2. Run: npm run compile"
 echo "  3. Test with: ./scripts/code.sh"
 echo ""
-echo -e "${GREEN}FewStepAway is now leaner and faster! 🚀${NC}"
+echo -e "${GREEN}FewStepsAway is now leaner and faster! 🚀${NC}"

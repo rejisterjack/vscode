@@ -1,12 +1,12 @@
-# FewStepAway - Performance Optimization Guide
+# FewStepsAway - Performance Optimization Guide
 
 ## 🚀 Blazing Fast by Design
 
-FewStepAway is optimized for speed. We've stripped away bloatware and implemented aggressive performance optimizations.
+FewStepsAway is optimized for speed. We've stripped away bloatware and implemented aggressive performance optimizations.
 
 ## Benchmarks
 
-| Metric | VS Code | FewStepAway | Improvement |
+| Metric | VS Code | FewStepsAway | Improvement |
 |--------|---------|-------------|-------------|
 | Startup Time | ~3-5s | < 1.5s | **3x faster** |
 | Memory Usage | ~400MB | ~250MB | **40% less** |
@@ -191,7 +191,7 @@ Even though we removed most built-ins, disable any you don't use:
 
 ## Extension Development
 
-When developing extensions for FewStepAway:
+When developing extensions for FewStepsAway:
 
 ### Do:
 - ✅ Lazy load heavy dependencies
@@ -228,7 +228,7 @@ Cmd/Ctrl+Shift+P → "Developer: Open Process Explorer"
 
 ## Comparison with VS Code
 
-| Feature | VS Code | FewStepAway |
+| Feature | VS Code | FewStepsAway |
 |---------|---------|-------------|
 | Built-in Extensions | 107 | 20 |
 | Bundle Size | ~300MB | ~150MB |
@@ -251,4 +251,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ---
 
-**FewStepAway**: Fast by default. No compromises. 🚀
+**FewStepsAway**: Fast by default. No compromises. 🚀

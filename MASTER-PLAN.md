@@ -1,8 +1,8 @@
-# FewStepAway - Master Development Plan
+# FewStepsAway - Master Development Plan
 
 ## Executive Summary
 
-This document serves as the **single source of truth** for the complete development roadmap of FewStepAway - an open-source, AI-native code editor built by deeply integrating AI capabilities into a VS Code fork.
+This document serves as the **single source of truth** for the complete development roadmap of FewStepsAway - an open-source, AI-native code editor built by deeply integrating AI capabilities into a VS Code fork.
 
 **Project Vision**: Create an editor where AI is woven into every interaction, not bolted on as an afterthought—providing native AI integration, multi-provider freedom (500+ models), full transparency (Apache 2.0), and seamless VS Code compatibility.
 
@@ -41,7 +41,7 @@ This document serves as the **single source of truth** for the complete developm
   - [x] `src/vs/ai/search/` - Semantic search
   - [x] `src/vs/ai/extension-api/` - Extension integration
 
-- [x] **0.1.2** - Update `product.json` with FewStepAway branding
+- [x] **0.1.2** - Update `product.json` with FewStepsAway branding
   - [x] Update application name and identifiers
   - [x] Configure data folders and mutex names
   - [x] Set up license information
@@ -948,7 +948,7 @@ src/vs/ai/
 ---
 
 **Next Review Date**: 2026-03-01  
-**Document Owner**: FewStepAway Core Team  
+**Document Owner**: FewStepsAway Core Team  
 **Status**: Active Development
 
 ---

@@ -1,8 +1,8 @@
-# FewStepAway - AI Coding Agent Instructions
+# FewStepsAway - AI Coding Agent Instructions
 
 ## Project Overview
 
-**FewStepAway** is an open-source, AI-native code editor built by forking VS Code and embedding AI capabilities natively. The goal is to create an editor where AI is woven into every interaction, not bolted on as an afterthought.
+**FewStepsAway** is an open-source, AI-native code editor built by forking VS Code and embedding AI capabilities natively. The goal is to create an editor where AI is woven into every interaction, not bolted on as an afterthought.
 
 ### Key Characteristics
 - **Fork of VS Code**: Built on top of the official VS Code codebase
@@ -16,7 +16,7 @@
 ## Project Structure
 
 ```
-fewstepaway/
+fewstepsaway/
 ├── src/                          # Main source code
 │   ├── vs/                       # VS Code core modules
 │   │   ├── base/                 # Base utilities and common code
@@ -506,8 +506,8 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/rejisterjack/fewstepaway.git
-cd fewstepaway
+git clone https://github.com/rejisterjack/fewstepsaway.git
+cd fewstepsaway
 npm install
 
 # 2. Build

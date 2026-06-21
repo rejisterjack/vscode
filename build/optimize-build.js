@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepAway Team. All rights reserved.
+ *  Copyright (c) FewStepsAway Team. All rights reserved.
  *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
  *--------------------------------------------------------------------------------------------*/
 
 /**
- * Build Optimization Script for FewStepAway
+ * Build Optimization Script for FewStepsAway
  * 
  * This script optimizes the build by:
  * 1. Removing unused code paths
@@ -50,9 +50,9 @@ const EXCLUDE_PATTERNS = [
 ];
 
 // Extensions to exclude
-const EXCLUDE_EXTENSIONS = require('./fewstepaway-config').EXCLUDED_EXTENSIONS;
+const EXCLUDE_EXTENSIONS = require('./fewstepsaway-config').EXCLUDED_EXTENSIONS;
 
-console.log('🔧 FewStepAway Build Optimizer');
+console.log('🔧 FewStepsAway Build Optimizer');
 console.log('================================');
 console.log();
 
@@ -148,7 +148,7 @@ logSuccess('Optimized tsconfig generated');
 // Step 5: Create webpack optimization config
 logStep('Creating webpack optimizations...');
 const webpackConfig = `
-// FewStepAway Webpack Optimizations
+// FewStepsAway Webpack Optimizations
 const path = require('path');
 
 module.exports = {
@@ -195,4 +195,4 @@ console.log('  1. npm install (to update dependencies)');
 console.log('  2. npm run compile');
 console.log('  3. npm run gulp vscode');
 console.log();
-console.log('🚀 FewStepAway is optimized for speed!');
+console.log('🚀 FewStepsAway is optimized for speed!');

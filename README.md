@@ -1,11 +1,11 @@
-# FewStepAway - AI Native Code Editor
+# FewStepsAway - AI Native Code Editor
 
 [![Vision](vision.md)](vision.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
 
 ## 🚀 The Vision
 
-**FewStepAway** is an open-source, AI-native code editor that feels like the future of development—where AI is woven into every interaction, not bolted on as an afterthought.
+**FewStepsAway** is an open-source, AI-native code editor that feels like the future of development—where AI is woven into every interaction, not bolted on as an afterthought.
 
 Built by forking VS Code and embedding AI capabilities natively, creating an editor that is:
 
@@ -16,7 +16,7 @@ Built by forking VS Code and embedding AI capabilities natively, creating an edi
 
 ## 🎯 Key Differentiators
 
-| Dimension | FewStepAway | Market Standard |
+| Dimension | FewStepsAway | Market Standard |
 |-----------|--------------|-----------------|
 | **Integration Depth** | Native—AI is core to the editor | Extension—AI runs as add-on |
 | **Provider Freedom** | 500+ models, any provider | Locked to vendor's choice |
@@ -36,8 +36,8 @@ Built by forking VS Code and embedding AI capabilities natively, creating an edi
 
 ```bash
 # Clone the repository
-git clone https://github.com/rejisterjack/fewstepaway.git
-cd fewstepaway
+git clone https://github.com/rejisterjack/fewstepsaway.git
+cd fewstepsaway
 
 # Install dependencies
 npm install
@@ -46,7 +46,7 @@ npm install
 npm run compile
 
 # Run the editor
-./scripts/fewstepaway.sh
+./scripts/fewstepsaway.sh
 ```
 
 ### Reference Repositories
@@ -63,7 +63,7 @@ See [references/README.md](references/README.md) for details.
 ## 🏗️ Project Structure
 
 ```
-fewstepaway/
+fewstepsaway/
 ├── src/                    # Main source code
 ├── extensions/             # Built-in extensions
 ├── build/                  # Build scripts and configuration
@@ -104,7 +104,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 Licensed under the [Apache License 2.0](LICENSE.txt).
 
-Copyright (c) FewStepAway Team and contributors.
+Copyright (c) FewStepsAway Team and contributors.
 
 ## 🙏 Acknowledgments
 
@@ -112,4 +112,4 @@ This project is a fork of [Visual Studio Code](https://github.com/microsoft/vsco
 
 ---
 
-**FewStepAway** - *The editor AI-native development deserves.*
+**FewStepsAway** - *The editor AI-native development deserves.*

@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepAway Team. All rights reserved.
+ *  Copyright (c) FewStepsAway Team. All rights reserved.
  *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Position, Range } from '../../../editor/common/core/position.js';
 
 /**
- * Core AI types for FewStepAway - AI Native Code Editor
+ * Core AI types for FewStepsAway - AI Native Code Editor
  */
 
 /**

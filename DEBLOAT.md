@@ -1,8 +1,8 @@
-# FewStepAway Debloating
+# FewStepsAway Debloating
 
 ## Overview
 
-FewStepAway has been aggressively debloated to achieve maximum performance. This document tracks what was removed and why.
+FewStepsAway has been aggressively debloated to achieve maximum performance. This document tracks what was removed and why.
 
 ## Removed Components
 
@@ -155,7 +155,7 @@ Disabled in default settings:
 
 ### Remove More Extensions
 ```bash
-# Edit build/fewstepaway-config.js
+# Edit build/fewstepsaway-config.js
 # Add extensions to EXCLUDED_EXTENSIONS array
 # Run: npm run debloat
 ```
@@ -186,13 +186,13 @@ If you need a removed feature:
 Install from marketplace:
 ```bash
 # Example: Install Go support
-fewstepaway --install-extension golang.go
+fewstepsaway --install-extension golang.go
 ```
 
 ### Language Support
 ```bash
 # Install language pack
-fewstepaway --install-extension ms-vscode.vscode-typescript-next
+fewstepsaway --install-extension ms-vscode.vscode-typescript-next
 ```
 
 ## Debloat Script
@@ -230,7 +230,7 @@ du -sh node_modules/
 
 ## Philosophy
 
-**FewStepAway is opinionated about performance:**
+**FewStepsAway is opinionated about performance:**
 
 1. **No bloat by default** - Install what you need
 2. **Privacy first** - No telemetry, ever
@@ -265,7 +265,7 @@ Potential future removals:
 
 ## Contributing
 
-Help make FewStepAway even faster:
+Help make FewStepsAway even faster:
 
 1. Identify bloat: `npm run analyze-bloat`
 2. Create PR with removal
@@ -274,4 +274,4 @@ Help make FewStepAway even faster:
 
 ---
 
-**FewStepAway: Stripped to the essentials. Built for speed. 🚀**
+**FewStepsAway: Stripped to the essentials. Built for speed. 🚀**

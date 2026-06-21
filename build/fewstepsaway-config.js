@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepAway Team. All rights reserved.
+ *  Copyright (c) FewStepsAway Team. All rights reserved.
  *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
  *--------------------------------------------------------------------------------------------*/
 
 /**
- * FewStepAway Build Configuration
+ * FewStepsAway Build Configuration
  * Optimized for minimal bloat and maximum performance
  */
 

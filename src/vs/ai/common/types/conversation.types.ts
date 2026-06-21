@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepAway Team. All rights reserved.
+ *  Copyright (c) FewStepsAway Team. All rights reserved.
  *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
  *--------------------------------------------------------------------------------------------*/
 
@@ -7,7 +7,7 @@ import { AIMode, CodeContext } from './ai.types.js';
 import { Event } from '../../../base/common/event.js';
 
 /**
- * Conversation (chat) types for FewStepAway
+ * Conversation (chat) types for FewStepsAway
  */
 
 /**

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepAway Team. All rights reserved.
+ *  Copyright (c) FewStepsAway Team. All rights reserved.
  *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
  *--------------------------------------------------------------------------------------------*/
 
@@ -22,7 +22,7 @@ import {
 } from '../common/types/context.types.js';
 
 /**
- * Context Manager implementation for FewStepAway
+ * Context Manager implementation for FewStepsAway
  * 
  * Responsible for gathering and managing code context for AI requests.
  * Tracks file changes, open editors, and recent edits to provide

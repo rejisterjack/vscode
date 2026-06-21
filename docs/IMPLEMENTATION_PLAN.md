@@ -1,8 +1,8 @@
-# FewStepAway - Complete Implementation Plan
+# FewStepsAway - Complete Implementation Plan
 
 ## Executive Summary
 
-This document provides a comprehensive implementation plan for transforming FewStepAway from a VS Code fork into a fully AI-native code editor. The plan covers all backend development aspects from foundational infrastructure to advanced AI features.
+This document provides a comprehensive implementation plan for transforming FewStepsAway from a VS Code fork into a fully AI-native code editor. The plan covers all backend development aspects from foundational infrastructure to advanced AI features.
 
 ---
 
@@ -50,7 +50,7 @@ Build an open-source, AI-native code editor that embeds AI capabilities natively
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         FEWSTEPAWAY ARCHITECTURE                            │
+│                         FEWSTEPSAWAY ARCHITECTURE                            │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
@@ -2456,8 +2456,8 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: fewstepaway-${{ matrix.os }}
-          path: .build/fewstepaway-*
+          name: fewstepsaway-${{ matrix.os }}
+          path: .build/fewstepsaway-*
 ```
 
 ### 11.2 Release Process
@@ -2501,9 +2501,9 @@ npm run gulp vscode-darwin
 # Create release
 echo "Creating GitHub release..."
 gh release create v$VERSION \
-    --title "FewStepAway v$VERSION" \
+    --title "FewStepsAway v$VERSION" \
     --notes-file CHANGELOG.md \
-    .build/fewstepaway-*
+    .build/fewstepsaway-*
 
 echo "Release v$VERSION complete!"
 ```

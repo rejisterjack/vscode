@@ -1,6 +1,6 @@
 #!/bin/bash
 # Remove Microsoft Telemetry Dependencies
-# Makes FewStepAway truly independent and telemetry-free
+# Makes FewStepsAway truly independent and telemetry-free
 
 set -e
 
@@ -87,4 +87,4 @@ echo "  2. Run: rm -rf node_modules && npm install"
 echo "  3. Test the application"
 echo "  4. Commit the changes"
 echo ""
-echo -e "${GREEN}FewStepAway is now Microsoft-telemetry-free! 🚀${NC}"
+echo -e "${GREEN}FewStepsAway is now Microsoft-telemetry-free! 🚀${NC}"

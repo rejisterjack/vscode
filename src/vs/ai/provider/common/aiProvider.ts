@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepAway Team. All rights reserved.
+ *  Copyright (c) FewStepsAway Team. All rights reserved.
  *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
  *--------------------------------------------------------------------------------------------*/
 
@@ -12,7 +12,7 @@ import {
 } from '../../common/types/ai.types.js';
 
 /**
- * Base interface for all AI providers in FewStepAway
+ * Base interface for all AI providers in FewStepsAway
  */
 export interface IAIProvider {
 	/** Provider identifier */
