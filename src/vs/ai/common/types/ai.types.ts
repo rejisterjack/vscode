@@ -3,7 +3,8 @@
  *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Position, Range } from '../../../editor/common/core/position.js';
+import { Position } from '../../../editor/common/core/position.js';
+import { Range } from '../../../editor/common/core/range.js';
 
 /**
  * Core AI types for FewStepsAway - AI Native Code Editor

@@ -190,6 +190,9 @@ import './contrib/mcp/electron-browser/mcp.contribution.js';
 // Policy Export
 import './contrib/policyExport/electron-browser/policyExport.contribution.js';
 
+// AI (native: registers IAIServerManagerService that proxies to the main process)
+import '../ai/electron-sandbox/aiServerService.js';
+
 //#endregion
 
 

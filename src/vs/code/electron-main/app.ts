@@ -64,6 +64,11 @@ import { IMeteredConnectionService } from '../../platform/meteredConnection/comm
 import { METERED_CONNECTION_CHANNEL } from '../../platform/meteredConnection/common/meteredConnectionIpc.js';
 import { MeteredConnectionChannel } from '../../platform/meteredConnection/electron-main/meteredConnectionChannel.js';
 import { MeteredConnectionMainService } from '../../platform/meteredConnection/electron-main/meteredConnectionMainService.js';
+import { IAIServerManagerService } from '../../ai/common/types/serverManager.types.js';
+import { AI_SERVER_CHANNEL } from '../../ai/common/serverManagerIpc.js';
+import { AIServerChannel } from '../../ai/electron-main/aiServerChannel.js';
+import { AIServerMainService } from '../../ai/electron-main/aiServerMainService.js';
+;
 import { IProductService } from '../../platform/product/common/productService.js';
 import { getRemoteAuthority } from '../../platform/remote/common/remoteHosts.js';
 import { SharedProcess } from '../../platform/sharedProcess/electron-main/sharedProcess.js';
@@ -1052,6 +1057,9 @@ export class CodeApplication extends Disposable {
 		const meteredConnectionService = new MeteredConnectionMainService(this.configurationService);
 		services.set(IMeteredConnectionService, meteredConnectionService);
 
+		// AI Server (CLI backend lifecycle — owns ChildProcess in main)
+		services.set(IAIServerManagerService, new SyncDescriptor(AIServerMainService));
+
 		// Web Contents Extractor
 		services.set(IWebContentExtractorService, new SyncDescriptor(NativeWebContentExtractorService, undefined, false /* proxied to other processes */));
 
@@ -1185,6 +1193,10 @@ export class CodeApplication extends Disposable {
 		const meteredConnectionChannel = new MeteredConnectionChannel(accessor.get(IMeteredConnectionService) as MeteredConnectionMainService);
 		mainProcessElectronServer.registerChannel(METERED_CONNECTION_CHANNEL, meteredConnectionChannel);
 		sharedProcessClient.then(client => client.registerChannel(METERED_CONNECTION_CHANNEL, meteredConnectionChannel));
+
+		// AI Server
+		const aiServerChannel = new AIServerChannel(accessor.get(IAIServerManagerService));
+		mainProcessElectronServer.registerChannel(AI_SERVER_CHANNEL, aiServerChannel);
 
 		// Process
 		const processChannel = ProxyChannel.fromService(new ProcessMainService(this.logService, accessor.get(IDiagnosticsService), accessor.get(IDiagnosticsMainService)), disposables);

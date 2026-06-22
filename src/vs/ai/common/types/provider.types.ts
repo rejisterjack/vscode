@@ -5,11 +5,19 @@
 
 import { IAIProvider } from '../../provider/common/aiProvider.js';
 import { Event } from '../../../base/common/event.js';
+import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
+
+/**
+ * AI Service service identifier (DI decoration)
+ */
+export const IAIService = createDecorator<IAIService>('aiService');
 
 /**
  * Provider registry interface
  */
 export interface IProviderRegistry {
+	readonly _serviceBrand: undefined;
+
 	/**
 	 * Register a provider
 	 */
@@ -61,10 +69,14 @@ export interface IProviderRegistry {
 	onDidUnregisterProvider: Event<string>;
 }
 
+export const IProviderRegistry = createDecorator<IProviderRegistry>('providerRegistry');
+
 /**
  * AI Service interface - main entry point for AI operations
  */
 export interface IAIService {
+	readonly _serviceBrand: undefined;
+
 	/**
 	 * Send a request to the active provider
 	 */

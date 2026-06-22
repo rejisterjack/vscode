@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- FewStepsAway application icon — "Steps -> goal caret" (Gradient Ascent palette).
+     Master source. Rasterize with rsvg-convert; see build/icon-gen/build-icons.sh. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>FewStepsAway</title>
+  <desc>Three ascending steps climbing toward an amber goal caret, on an indigo-to-violet gradient tile.</desc>
+
+  <defs>
+    <!-- Ground: deep indigo (bottom-left) -> violet (top-right) -->
+    <linearGradient id="bg" x1="0" y1="1024" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1E1B4B"/>
+      <stop offset="1" stop-color="#4C1D95"/>
+    </linearGradient>
+
+    <!-- Ascent: indigo (bottom-left) -> cyan (top-right) -->
+    <linearGradient id="steps" x1="260" y1="812" x2="764" y2="392" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+
+    <!-- Goal glow: amber radial falloff -->
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FBBF24" stop-opacity="0.9"/>
+      <stop offset="0.5" stop-color="#FBBF24" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#FBBF24" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft drop shadow under the staircase -->
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="16"/>
+      <feOffset dx="0" dy="18" result="off"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Squircle-ish tile clip so shadows/glow never spill past the rounded square -->
+    <clipPath id="tile">
+      <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#tile)">
+    <!-- Ground -->
+    <rect x="0" y="0" width="1024" height="1024" fill="url(#bg)"/>
+
+    <!-- Three ascending steps -->
+    <path filter="url(#shadow)"
+          d="M 260 812 L 260 672 L 428 672 L 428 532 L 596 532 L 596 392 L 764 392 L 764 812 Z"
+          fill="url(#steps)"/>
+
+    <!-- Goal marker: glow + amber caret seated on the top tread -->
+    <circle cx="680" cy="320" r="130" fill="url(#glow)"/>
+    <path d="M 680 250 L 736 390 L 624 390 Z" fill="#FBBF24"/>
+  </g>
+
+  <!-- Rounded-square outline is baked in; no border stroke needed -->
+</svg>

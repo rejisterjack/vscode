@@ -18,7 +18,6 @@ import { IChatAgentAttachmentCapabilities, IChatAgentCommand, IChatAgentData } f
 import { IChatResponseModel, IChatModelInputState } from '../common/model/chatModel.js';
 import { IChatMode } from '../common/chatModes.js';
 import { IParsedChatRequest } from '../common/requestParser/chatParserTypes.js';
-import { CHAT_PROVIDER_ID } from '../common/participants/chatParticipantContribTypes.js';
 import { ChatRequestQueueKind, IChatElicitationRequest, IChatLocationData, IChatSendRequestOptions } from '../common/chatService/chatService.js';
 import { IChatRequestViewModel, IChatResponseViewModel, IChatViewModel, IChatPendingDividerViewModel } from '../common/model/chatViewModel.js';
 import { ChatAgentLocation, ChatModeKind } from '../common/constants.js';
@@ -28,6 +27,7 @@ import { ChatInputPart } from './widget/input/chatInputPart.js';
 import { ChatWidget, IChatWidgetContrib } from './widget/chatWidget.js';
 import { ICodeBlockActionContext } from './widget/chatContentParts/codeBlockPart.js';
 import { AgentSessionProviders } from './agentSessions/agentSessions.js';
+import { CHAT_PROVIDER_ID } from '../common/participants/chatParticipantContribTypes.js';
 
 /**
  * A workspace item that can be selected in the workspace picker.
@@ -423,6 +423,7 @@ export interface IChatCodeBlockContextProviderService {
 	readonly providers: ICodeBlockActionContextProvider[];
 	registerProvider(provider: ICodeBlockActionContextProvider, id: string): IDisposable;
 }
+
 
 export const ChatViewId = `workbench.panel.chat.view.${CHAT_PROVIDER_ID}`;
 export const ChatViewContainerId = 'workbench.panel.chat';

@@ -12,12 +12,15 @@ import { ITextFileService } from '../../workbench/services/textfile/common/textf
 import { URI } from '../../base/common/uri.js';
 
 import {
-	IContextManager,
 	CodeContext,
 	ContextOptions,
 	ContextChange,
 	FileContext,
-	EditContext,
+	EditContext
+} from '../common/types/ai.types.js';
+
+import {
+	IContextManager,
 	ProjectStructure
 } from '../common/types/context.types.js';
 
@@ -29,6 +32,8 @@ import {
  * relevant context to AI providers.
  */
 export class ContextManager extends Disposable implements IContextManager {
+	declare readonly _serviceBrand: undefined;
+
 	private readonly _onContextChanged = this._register(new Emitter<ContextChange>());
 	readonly onContextChanged: Event<ContextChange> = this._onContextChanged.event;
 
@@ -56,14 +61,18 @@ export class ContextManager extends Disposable implements IContextManager {
 		this._register(this.fileService.onDidFilesChange(e => {
 			this._onContextChanged.fire({
 				type: 'filesChanged',
-				changes: e.changes
+				changes: {
+					added: e.rawAdded,
+					updated: e.rawUpdated,
+					deleted: e.rawDeleted
+				}
 			});
 		}));
 
 		// Track text model changes for recent edits
 		this._register(this.textFileService.files.onDidSave(e => {
 			this.addRecentEdit({
-				filePath: e.resource.fsPath,
+				filePath: e.model.resource.fsPath,
 				change: 'File saved',
 				timestamp: Date.now()
 			});
@@ -82,9 +91,14 @@ export class ContextManager extends Disposable implements IContextManager {
 
 		let context: CodeContext = {
 			currentFile,
-			openFiles: openFiles.filter(f => f.path !== currentFile?.path),
+			openFiles: openFiles.filter((f: FileContext) => f.path !== currentFile?.path),
 			recentEdits,
-			projectStructure
+			projectStructure: projectStructure ? {
+				rootPath: projectStructure.rootPath,
+				files: projectStructure.sourceFiles,
+				dependencies: projectStructure.dependencies?.map(d => d.name),
+				framework: projectStructure.framework?.name
+			} : undefined
 		};
 
 		// Apply token budget if needed

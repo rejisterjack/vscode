@@ -5,10 +5,16 @@
 
 import { AIMode, CodeContext } from './ai.types.js';
 import { Event } from '../../../base/common/event.js';
+import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
 
 /**
  * Conversation (chat) types for FewStepsAway
  */
+
+/**
+ * Chat service identifier (DI decoration)
+ */
+export const IChatService = createDecorator<IChatService>('chatService');
 
 /**
  * Message role
@@ -117,6 +123,8 @@ export interface ConversationOptions {
  * Chat service interface
  */
 export interface IChatService {
+	readonly _serviceBrand: undefined;
+
 	/**
 	 * Create a new conversation
 	 */

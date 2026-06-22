@@ -122,30 +122,44 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
 	private readonly _onDidChangePolicyData = this._register(new Emitter<IPolicyData | null>());
 	readonly onDidChangePolicyData = this._onDidChangePolicyData.event;
 
-	private readonly defaultAccountConfig: IDefaultAccountConfig;
+	private readonly defaultAccountConfig: IDefaultAccountConfig | null;
 	private defaultAccountProvider: IDefaultAccountProvider | null = null;
 
 	constructor(
 		@IProductService productService: IProductService,
 	) {
 		super();
-		this.defaultAccountConfig = toDefaultAccountConfig(productService.defaultChatAgent);
+		// Copilot/Microsoft builds populate defaultChatAgent in product.json.
+		// Other forks (e.g. FewStepsAway) don't — degrade gracefully instead of throwing.
+		this.defaultAccountConfig = productService.defaultChatAgent
+			? toDefaultAccountConfig(productService.defaultChatAgent)
+			: null;
+		// Nothing else to init without a config; open the barrier immediately
+		// so getDefaultAccount() doesn't block forever in non-Copilot builds.
+		if (!this.defaultAccountConfig) {
+			this.initBarrier.open();
+		}
 	}
 
 	async getDefaultAccount(): Promise<IDefaultAccount | null> {
-		await this.initBarrier.wait();
-		return this.defaultAccount;
-	}
+	await this.initBarrier.wait();
+	return this.defaultAccount;
+}
 
-	getDefaultAccountAuthenticationProvider(): IDefaultAccountAuthenticationProvider {
-		if (this.defaultAccountProvider) {
-			return this.defaultAccountProvider.getDefaultAccountAuthenticationProvider();
-		}
-		return {
-			...this.defaultAccountConfig.authenticationProvider.default,
-			enterprise: false
-		};
+getDefaultAccountAuthenticationProvider(): IDefaultAccountAuthenticationProvider {
+	if (this.defaultAccountProvider) {
+		return this.defaultAccountProvider.getDefaultAccountAuthenticationProvider();
 	}
+	if (!this.defaultAccountConfig) {
+		// No default chat agent configured (e.g. non-Copilot forks).
+		// Return a benign placeholder so callers don't crash.
+		return { id: 'none', name: 'None', enterprise: false };
+	}
+	return {
+		...this.defaultAccountConfig.authenticationProvider.default,
+		enterprise: false
+	};
+}
 
 	setDefaultAccountProvider(provider: IDefaultAccountProvider): void {
 		if (this.defaultAccountProvider) {
@@ -848,6 +862,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
 		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
 	) {
 		super();
+		// Skip registration entirely when the product doesn't define a default chat agent
+		// (e.g. non-Copilot forks), so the rest of the workbench can boot normally.
+		if (!productService.defaultChatAgent) {
+			return;
+		}
 		const defaultAccountProvider = this._register(instantiationService.createInstance(DefaultAccountProvider, toDefaultAccountConfig(productService.defaultChatAgent)));
 		defaultAccountService.setDefaultAccountProvider(defaultAccountProvider);
 	}

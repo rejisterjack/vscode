@@ -438,4 +438,11 @@ import './contrib/editTelemetry/browser/editTelemetry.contribution.js';
 // Opener
 import './contrib/opener/browser/opener.contribution.js';
 
+// AI Native Configuration & Services
+import '../ai/common/configuration.js';
+import '../ai/ai.contribution.js';
+
+// Native AI Chat Panel (AuxiliaryBar view)
+import './contrib/aiChat/browser/aiChat.contribution.js';
+
 //#endregion

@@ -6,15 +6,23 @@
 import { CodeContext, ContextOptions, ContextChange, FileContext, EditContext } from './ai.types.js';
 import { Event } from '../../../base/common/event.js';
 import { IDisposable } from '../../../base/common/lifecycle.js';
+import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
 
 /**
  * Context management types for FewStepsAway
  */
 
 /**
+ * Context manager service identifier (DI decoration)
+ */
+export const IContextManager = createDecorator<IContextManager>('contextManager');
+
+/**
  * Context manager interface
  */
 export interface IContextManager extends IDisposable {
+	readonly _serviceBrand: undefined;
+
 	/**
 	 * Gather code context based on options
 	 */
@@ -53,7 +61,7 @@ export interface IContextManager extends IDisposable {
 	/**
 	 * Get current selection context
 	 */
-	getSelectionContext(): Promise<SelectionContext | undefined>;
+	getSelectionContext(): Promise<EditorSelectionContext | undefined>;
 
 	/**
 	 * Estimate tokens in context
@@ -137,7 +145,7 @@ export interface CommitInfo {
 /**
  * Selection context
  */
-export interface SelectionContext {
+export interface EditorSelectionContext {
 	/** Selected text */
 	text: string;
 	/** File path */

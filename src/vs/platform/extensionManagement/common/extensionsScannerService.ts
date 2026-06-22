@@ -331,6 +331,10 @@ export abstract class AbstractExtensionsScannerService extends Disposable implem
 	}
 
 	private async applyScanOptions(extensions: IRelaxedScannedExtension[], type: ExtensionType | 'development', scanOptions: { includeAllVersions?: boolean; includeInvalid?: boolean; pickLatest?: boolean } = {}): Promise<IRelaxedScannedExtension[]> {
+		extensions = extensions.filter(extension => {
+			const id = extension.identifier.id.toLowerCase();
+			return id !== 'github.copilot' && id !== 'github.copilot-chat';
+		});
 		if (!scanOptions.includeAllVersions) {
 			extensions = this.dedupExtensions(type === ExtensionType.System ? extensions : undefined, type === ExtensionType.User ? extensions : undefined, type === 'development' ? extensions : undefined, await this.getTargetPlatform(), !!scanOptions.pickLatest);
 		}

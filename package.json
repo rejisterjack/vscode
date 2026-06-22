@@ -125,6 +125,8 @@
     "yazl": "^2.4.3"
   },
   "devDependencies": {
+    "@microsoft/1ds-core-js": "^4.4.2",
+    "@microsoft/1ds-post-js": "^4.4.2",
     "@playwright/test": "^1.56.1",
     "@stylistic/eslint-plugin-ts": "^2.8.0",
     "@types/cookie": "^0.3.3",
@@ -149,6 +151,7 @@
     "@typescript-eslint/utils": "^8.45.0",
     "@typescript/native-preview": "^7.0.0-dev.20260130",
     "@vscode/gulp-electron": "^1.38.2",
+    "@vscode/l10n-dev": "^0.0.35",
     "@vscode/spdlog": "^0.15.8",
     "@vscode/test-cli": "^0.0.6",
     "@vscode/test-electron": "^2.4.0",
@@ -214,6 +217,7 @@
     "source-map-support": "^0.3.2",
     "style-loader": "^3.3.2",
     "tar": "^7.5.7",
+    "tas-client": "^0.4.1",
     "ts-loader": "^9.5.1",
     "tsec": "0.2.7",
     "tslib": "^2.6.3",

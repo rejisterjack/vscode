@@ -23,6 +23,7 @@ export const all = Object.freeze<string[]>([
 	'src/**/*',
 	'test/**/*',
 	'!cli/**/*',
+	'!extensions/fewstepsaway-ai/**',
 	'!out*/**',
 	'!extensions/**/out*/**',
 	'!test/**/out/**',
@@ -44,6 +45,7 @@ export const unicodeFilter = Object.freeze<string[]>([
 	'!**/*.test.ts',
 	'!**/*.{d.ts,json,md}',
 	'!**/*.mp3',
+	'!**/*.wav',
 	'!**/*.tiff',
 
 	'!build/win32/**',
@@ -141,6 +143,7 @@ export const indentationFilter = Object.freeze<string[]>([
 	'!**/*.Dockerfile',
 	'!**/*.dockerfile',
 	'!**/*.tiff',
+	'!**/*.wav',
 
 	// except for built files
 	'!extensions/mermaid-chat-features/chat-webview-out/*.js',
@@ -164,6 +167,7 @@ export const copyrightFilter = Object.freeze<string[]>([
 	'!**/*.ico',
 	'!**/*.opus',
 	'!**/*.mp3',
+	'!**/*.wav',
 	'!**/*.icns',
 	'!**/*.xml',
 	'!**/*.sh',

@@ -233,22 +233,33 @@ function createGitIndexVinyls(paths: string[]): Promise<VinylFile[]> {
 					return e(err);
 				}
 
-				cp.exec(
-					process.platform === 'win32' ? `git show :${relativePath}` : `git show ':${relativePath}'`,
-					{ maxBuffer: stat.size, encoding: 'buffer' },
-					(err, out) => {
-						if (err) {
-							return e(err);
-						}
+				// Submodule gitlinks (mode 160000) have no readable content in the
+				// index — `git show` fails on them. Skip them since they only point
+				// at a commit in another repository.
+				if (stat.isDirectory()) {
+					return c(null);
+				}
 
-						c(new VinylFile({
-							path: fullPath,
-							base: repositoryPath,
-							contents: out,
-							stat: stat,
-						}));
+			cp.exec(
+				process.platform === 'win32' ? `git show :${relativePath}` : `git show ':${relativePath}'`,
+				{ maxBuffer: stat.size, encoding: 'buffer' },
+				(err, out) => {
+					if (err) {
+						// Path is no longer in the index (e.g. staged deletion). Nothing to lint.
+						if (/unknown revision or path not in the working tree|does not exist in the index|path .* does not exist in/i.test(err.message)) {
+							return c(null);
+						}
+						return e(err);
 					}
-				);
+
+					c(new VinylFile({
+						path: fullPath,
+						base: repositoryPath,
+						contents: out,
+						stat: stat,
+					}));
+				}
+			);
 			});
 		})
 	);

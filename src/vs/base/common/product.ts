@@ -230,6 +230,13 @@ export interface IProductConfiguration {
 	readonly remoteDefaultExtensionsIfInstalledLocally?: string[];
 
 	readonly extensionConfigurationPolicy?: IStringDictionary<IPolicy>;
+
+	/**
+	 * FewStepsAway CLI binary configuration.
+	 */
+	readonly cli?: {
+		readonly fewstepsawayPath: string;
+	};
 }
 
 export interface ITunnelApplicationConfig {

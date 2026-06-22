@@ -1,0 +1,1122 @@
+{
+  "name": "fewstepsaway-ai",
+  "displayName": "FewStepsAway: AI Coding Agent, Copilot, and Autocomplete",
+  "description": "Open Source AI coding agent that generates code from natural language, automates tasks, and runs terminal commands. Features inline autocomplete, browser automation, automated refactoring, and custom modes for planning, coding, and debugging. Supports 500+ AI models including Claude (Anthropic), Gemini, Grok, GPT, Codex and GLM.",
+  "version": "7.3.50",
+  "icon": "assets/icons/logo-outline-black.png",
+  "galleryBanner": {
+    "color": "#FFFFFF",
+    "theme": "light"
+  },
+  "publisher": "fewstepsaway",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FewStepsAway-Org/fewstepsaway.git",
+    "directory": "packages/fewstepsaway-vscode"
+  },
+  "engines": {
+    "vscode": "^1.105.1"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "FewStepsAway"
+  },
+  "categories": [
+    "AI",
+    "Chat",
+    "Programming Languages",
+    "Education",
+    "Snippets",
+    "Testing"
+  ],
+  "keywords": [
+    "fewstepsaway",
+    "FewStepsAway",
+    "fewstepsaway",
+    "ai",
+    "agent",
+    "agentic",
+    "coding",
+    "coding agent",
+    "coding assistant",
+    "autocomplete",
+    "code completion",
+    "pair programming",
+    "chat",
+    "terminal",
+    "chatgpt",
+    "claude",
+    "sonnet",
+    "anthropic",
+    "openai",
+    "zoo code",
+    "opencode",
+    "open code"
+  ],
+  "activationEvents": [
+    "onCommand:fewstepsaway.ai.takeHeapSnapshot"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "taskDefinitions": [
+      {
+        "type": "fewstepsaway-worktree-setup",
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "The setup script command to execute"
+          }
+        }
+      }
+    ],
+    "views": {},
+    "commands": [
+      {
+        "command": "fewstepsaway.ai.plusButtonClicked",
+        "title": "New Task",
+        "category": "FewStepsAway",
+        "icon": "$(add)"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManagerOpen",
+        "title": "Agent Manager",
+        "category": "FewStepsAway",
+        "icon": "$(organization)"
+      },
+      {
+        "command": "fewstepsaway.ai.fewstepsawayClawOpen",
+        "title": "FewStepsAway Chat",
+        "category": "FewStepsAway",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "fewstepsaway.ai.marketplaceButtonClicked",
+        "title": "Marketplace",
+        "category": "FewStepsAway",
+        "icon": "$(extensions)"
+      },
+      {
+        "command": "fewstepsaway.ai.historyButtonClicked",
+        "title": "History",
+        "category": "FewStepsAway",
+        "icon": "$(history)"
+      },
+      {
+        "command": "fewstepsaway.ai.profileButtonClicked",
+        "title": "Profile",
+        "category": "FewStepsAway",
+        "icon": "$(account)"
+      },
+      {
+        "command": "fewstepsaway.ai.settingsButtonClicked",
+        "title": "Settings",
+        "category": "FewStepsAway",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fewstepsaway.ai.sidebarTitle.plusButtonClicked",
+        "title": "New Task",
+        "icon": "$(add)"
+      },
+      {
+        "command": "fewstepsaway.ai.sidebarTitle.agentManagerOpen",
+        "title": "Agent Manager",
+        "icon": "$(organization)"
+      },
+      {
+        "command": "fewstepsaway.ai.sidebarTitle.fewstepsawayClawOpen",
+        "title": "FewStepsAway Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "fewstepsaway.ai.sidebarTitle.marketplaceButtonClicked",
+        "title": "Marketplace",
+        "icon": "$(extensions)"
+      },
+      {
+        "command": "fewstepsaway.ai.sidebarTitle.historyButtonClicked",
+        "title": "History",
+        "icon": "$(history)"
+      },
+      {
+        "command": "fewstepsaway.ai.sidebarTitle.profileButtonClicked",
+        "title": "Profile",
+        "icon": "$(account)"
+      },
+      {
+        "command": "fewstepsaway.ai.sidebarTitle.settingsButtonClicked",
+        "title": "Settings",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fewstepsaway.ai.openInTab",
+        "title": "Open in Tab",
+        "category": "FewStepsAway",
+        "icon": {
+          "light": "assets/icons/fewstepsaway-light.svg",
+          "dark": "assets/icons/fewstepsaway-dark.svg"
+        }
+      },
+      {
+        "command": "fewstepsaway.ai.showChanges",
+        "title": "Show Changes",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.openMigrationWizard",
+        "title": "Migrate Settings from Legacy Version",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.generateSuggestions",
+        "title": "Generate Suggested Edits",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.cancelSuggestions",
+        "title": "Cancel Suggested Edits",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.nextEdit.acceptOrJump",
+        "title": "Next Edit: Accept or Jump to Suggested Edit",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.nextEdit.dismiss",
+        "title": "Next Edit: Dismiss Pending Suggestion",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.previousSession",
+        "title": "Agent Manager: Previous Session",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.nextSession",
+        "title": "Agent Manager: Next Session",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.previousTab",
+        "title": "Agent Manager: Previous Tab",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.nextTab",
+        "title": "Agent Manager: Next Tab",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.search",
+        "title": "Agent Manager: Search Worktrees and Sessions",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.showTerminal",
+        "title": "Agent Manager: Focus Terminal",
+        "category": "FewStepsAway",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.runScript",
+        "title": "Agent Manager: Run Script",
+        "category": "FewStepsAway",
+        "icon": "$(play)"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.toggleDiff",
+        "title": "Agent Manager: Toggle Diff Panel",
+        "category": "FewStepsAway",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.showShortcuts",
+        "title": "Agent Manager: Show Keyboard Shortcuts",
+        "category": "FewStepsAway",
+        "icon": "$(keyboard)"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.newTab",
+        "title": "Agent Manager: New Tab",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.newTerminal",
+        "title": "Agent Manager: New Terminal Tab (Experimental)",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.closeTab",
+        "title": "Agent Manager: Close Tab",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.newWorktree",
+        "title": "Agent Manager: New Worktree",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.openWorktree",
+        "title": "Agent Manager: Open Worktree",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.openPR",
+        "title": "Agent Manager: Open Pull Request",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.closeWorktree",
+        "title": "Agent Manager: Close Worktree",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.advancedWorktree",
+        "title": "Agent Manager: Advanced New Worktree",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo1",
+        "title": "Agent Manager: Jump to Item 1",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo2",
+        "title": "Agent Manager: Jump to Item 2",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo3",
+        "title": "Agent Manager: Jump to Item 3",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo4",
+        "title": "Agent Manager: Jump to Item 4",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo5",
+        "title": "Agent Manager: Jump to Item 5",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo6",
+        "title": "Agent Manager: Jump to Item 6",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo7",
+        "title": "Agent Manager: Jump to Item 7",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo8",
+        "title": "Agent Manager: Jump to Item 8",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo9",
+        "title": "Agent Manager: Jump to Item 9",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.generateCommitMessage",
+        "title": "Generate Commit Message",
+        "category": "FewStepsAway",
+        "icon": {
+          "light": "assets/icons/fewstepsaway-light.svg",
+          "dark": "assets/icons/fewstepsaway-dark.svg"
+        }
+      },
+      {
+        "command": "fewstepsaway.ai.explainCode",
+        "title": "Explain Code",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.fixCode",
+        "title": "Fix Code",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.improveCode",
+        "title": "Improve Code",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.addToContext",
+        "title": "Add to Context",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.terminalAddToContext",
+        "title": "Add Terminal Content to Context",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.terminalFixCommand",
+        "title": "Fix This Command",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.terminalExplainCommand",
+        "title": "Explain This Command",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.focusChatInput",
+        "title": "Focus Chat Input",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.cycleAgentMode",
+        "title": "Cycle Agent Mode",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.cyclePreviousAgentMode",
+        "title": "Cycle Previous Agent Mode",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.toggleAutoApprove",
+        "title": "Toggle Auto-Approve",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.generateTerminalCommand",
+        "title": "Generate Terminal Command",
+        "category": "FewStepsAway"
+      },
+      {
+        "command": "fewstepsaway.ai.takeHeapSnapshot",
+        "title": "Take Heap Snapshot",
+        "category": "FewStepsAway"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "fewstepsaway.ai.editorContextMenu",
+        "label": "FewStepsAway"
+      },
+      {
+        "id": "fewstepsaway.ai.terminalContextMenu",
+        "label": "FewStepsAway"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.plusButtonClicked",
+          "when": "false"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.historyButtonClicked",
+          "when": "false"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.agentManagerOpen",
+          "when": "false"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.fewstepsawayClawOpen",
+          "when": "false"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.marketplaceButtonClicked",
+          "when": "false"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.profileButtonClicked",
+          "when": "false"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.settingsButtonClicked",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.plusButtonClicked",
+          "group": "navigation@0",
+          "when": "view == fewstepsaway.SidebarProvider"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.historyButtonClicked",
+          "group": "navigation@1",
+          "when": "view == fewstepsaway.SidebarProvider"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.agentManagerOpen",
+          "group": "navigation@2",
+          "when": "view == fewstepsaway.SidebarProvider"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.fewstepsawayClawOpen",
+          "group": "navigation@3",
+          "when": "view == fewstepsaway.SidebarProvider"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.marketplaceButtonClicked",
+          "group": "navigation@4",
+          "when": "view == fewstepsaway.SidebarProvider"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.profileButtonClicked",
+          "group": "navigation@5",
+          "when": "view == fewstepsaway.SidebarProvider"
+        },
+        {
+          "command": "fewstepsaway.ai.sidebarTitle.settingsButtonClicked",
+          "group": "navigation@6",
+          "when": "view == fewstepsaway.SidebarProvider"
+        }
+      ],
+      "scm/title": [
+        {
+          "command": "fewstepsaway.ai.generateCommitMessage",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ],
+      "scm/input": [
+        {
+          "command": "fewstepsaway.ai.generateCommitMessage",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "fewstepsaway.ai.openInTab",
+          "group": "navigation",
+          "when": "true"
+        },
+        {
+          "command": "fewstepsaway.ai.plusButtonClicked",
+          "group": "navigation@0",
+          "when": "activeWebviewPanelId == fewstepsaway.ai.TabPanel"
+        },
+        {
+          "command": "fewstepsaway.ai.historyButtonClicked",
+          "group": "navigation@1",
+          "when": "activeWebviewPanelId == fewstepsaway.ai.TabPanel"
+        },
+        {
+          "command": "fewstepsaway.ai.profileButtonClicked",
+          "group": "navigation@2",
+          "when": "activeWebviewPanelId == fewstepsaway.ai.TabPanel"
+        },
+        {
+          "command": "fewstepsaway.ai.settingsButtonClicked",
+          "group": "navigation@3",
+          "when": "activeWebviewPanelId == fewstepsaway.ai.TabPanel"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "fewstepsaway.ai.editorContextMenu",
+          "group": "1_fewstepsaway"
+        }
+      ],
+      "fewstepsaway.ai.editorContextMenu": [
+        {
+          "command": "fewstepsaway.ai.explainCode",
+          "group": "1_actions@1"
+        },
+        {
+          "command": "fewstepsaway.ai.fixCode",
+          "group": "1_actions@2"
+        },
+        {
+          "command": "fewstepsaway.ai.improveCode",
+          "group": "1_actions@3"
+        },
+        {
+          "command": "fewstepsaway.ai.addToContext",
+          "group": "1_actions@4"
+        }
+      ],
+      "terminal/context": [
+        {
+          "submenu": "fewstepsaway.ai.terminalContextMenu",
+          "group": "2_fewstepsaway"
+        }
+      ],
+      "fewstepsaway.ai.terminalContextMenu": [
+        {
+          "command": "fewstepsaway.ai.terminalAddToContext",
+          "group": "1_actions@1"
+        },
+        {
+          "command": "fewstepsaway.ai.terminalFixCommand",
+          "group": "1_actions@2"
+        },
+        {
+          "command": "fewstepsaway.ai.terminalExplainCommand",
+          "group": "1_actions@3"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "fewstepsaway.ai.focusChatInput",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      },
+      {
+        "command": "fewstepsaway.ai.toggleAutoApprove",
+        "key": "ctrl+alt+a",
+        "mac": "cmd+alt+a"
+      },
+      {
+        "command": "fewstepsaway.ai.generateTerminalCommand",
+        "key": "ctrl+shift+g",
+        "mac": "cmd+shift+g"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManagerOpen",
+        "key": "ctrl+shift+m",
+        "mac": "cmd+shift+m"
+      },
+      {
+        "command": "fewstepsaway.ai.addToContext",
+        "key": "ctrl+k ctrl+a",
+        "mac": "cmd+k cmd+a",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.previousSession",
+        "key": "ctrl+alt+up",
+        "mac": "cmd+alt+up",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.nextSession",
+        "key": "ctrl+alt+down",
+        "mac": "cmd+alt+down",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.previousTab",
+        "key": "ctrl+alt+left",
+        "mac": "cmd+alt+left",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.nextTab",
+        "key": "ctrl+alt+right",
+        "mac": "cmd+alt+right",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.search",
+        "key": "ctrl+f",
+        "mac": "cmd+f",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel' && !terminalFocus"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.showTerminal",
+        "key": "ctrl+/",
+        "mac": "cmd+/",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.runScript",
+        "key": "ctrl+e",
+        "mac": "cmd+e",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel' && (isMac || !terminalFocus)"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.toggleDiff",
+        "key": "ctrl+d",
+        "mac": "cmd+d",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.showShortcuts",
+        "key": "ctrl+shift+/",
+        "mac": "cmd+shift+/",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.newTab",
+        "key": "ctrl+t",
+        "mac": "cmd+t",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.newTerminal",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.closeTab",
+        "key": "ctrl+w",
+        "mac": "cmd+w",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.newWorktree",
+        "key": "ctrl+n",
+        "mac": "cmd+n",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.openWorktree",
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.openPR",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.closeWorktree",
+        "key": "ctrl+shift+w",
+        "mac": "cmd+shift+w",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.advancedWorktree",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo1",
+        "key": "ctrl+1",
+        "mac": "cmd+1",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo2",
+        "key": "ctrl+2",
+        "mac": "cmd+2",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo3",
+        "key": "ctrl+3",
+        "mac": "cmd+3",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo4",
+        "key": "ctrl+4",
+        "mac": "cmd+4",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo5",
+        "key": "ctrl+5",
+        "mac": "cmd+5",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo6",
+        "key": "ctrl+6",
+        "mac": "cmd+6",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo7",
+        "key": "ctrl+7",
+        "mac": "cmd+7",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo8",
+        "key": "ctrl+8",
+        "mac": "cmd+8",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.agentManager.jumpTo9",
+        "key": "ctrl+9",
+        "mac": "cmd+9",
+        "when": "activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.cycleAgentMode",
+        "key": "ctrl+.",
+        "mac": "cmd+.",
+        "when": "sideBarFocus && fewstepsaway.ai.sidebarVisible || activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel' || activeWebviewPanelId == 'fewstepsaway.ai.TabPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.cyclePreviousAgentMode",
+        "key": "ctrl+shift+.",
+        "mac": "cmd+shift+.",
+        "when": "sideBarFocus && fewstepsaway.ai.sidebarVisible || activeWebviewPanelId == 'fewstepsaway.ai.AgentManagerPanel' || activeWebviewPanelId == 'fewstepsaway.ai.TabPanel'"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.cancelSuggestions",
+        "key": "escape",
+        "when": "editorTextFocus && !editorTabMovesFocus && !inSnippetMode && fewstepsaway.ai.autocomplete.hasSuggestions"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.generateSuggestions",
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "when": "editorTextFocus && !editorTabMovesFocus && !inSnippetMode && fewstepsaway.autocomplete.enableSmartInlineTaskKeybinding && !github.copilot.completions.enabled"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.showIncompatibilityExtensionPopup",
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "when": "editorTextFocus && !editorTabMovesFocus && !inSnippetMode && fewstepsaway.autocomplete.enableSmartInlineTaskKeybinding && github.copilot.completions.enabled"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.nextEdit.acceptOrJump",
+        "key": "tab",
+        "when": "editorTextFocus && !editorTabMovesFocus && !inSnippetMode && !suggestWidgetVisible && fewstepsaway-ai.nextEdit.hasPendingSuggestion"
+      },
+      {
+        "command": "fewstepsaway.ai.autocomplete.nextEdit.dismiss",
+        "key": "escape",
+        "when": "editorTextFocus && !editorTabMovesFocus && !inSnippetMode && fewstepsaway-ai.nextEdit.hasPendingSuggestion"
+      }
+    ],
+    "configuration": {
+      "title": "FewStepsAway",
+      "properties": {
+        "fewstepsaway.ai.language": {
+          "type": "string",
+          "default": "",
+          "description": "Override the UI language for FewStepsAway (e.g. en, de, ja). Empty means use VS Code's display language.",
+          "enum": [
+            "",
+            "en",
+            "zh",
+            "zht",
+            "ko",
+            "de",
+            "es",
+            "fr",
+            "da",
+            "ja",
+            "pl",
+            "ru",
+            "ar",
+            "no",
+            "br",
+            "th",
+            "bs",
+            "tr",
+            "nl",
+            "uk",
+            "it"
+          ],
+          "enumDescriptions": [
+            "Auto (VS Code language)",
+            "English",
+            "简体中文",
+            "繁體中文",
+            "한국어",
+            "Deutsch",
+            "Español",
+            "Français",
+            "Dansk",
+            "日本語",
+            "Polski",
+            "Русский",
+            "العربية",
+            "Norsk",
+            "Português (Brasil)",
+            "ภาษาไทย",
+            "Bosanski",
+            "Türkçe",
+            "Nederlands",
+            "Українська",
+            "Italiano"
+          ]
+        },
+        "fewstepsaway.ai.model.providerID": {
+          "type": "string",
+          "default": "fewstepsaway",
+          "description": "Default model provider ID for new sessions"
+        },
+        "fewstepsaway.ai.model.modelID": {
+          "type": "string",
+          "default": "fewstepsaway-auto/free",
+          "description": "Default model ID for new sessions"
+        },
+        "fewstepsaway.ai.autocomplete.model": {
+          "type": "string",
+          "enum": [
+            "mistralai/codestral-2508",
+            "inception/mercury-edit-2",
+            "inception/mercury-next-edit",
+            "codestral-2508",
+            "mercury-edit-2",
+            "mercury-next-edit"
+          ],
+          "enumDescriptions": [
+            "Codestral via FewStepsAway Gateway",
+            "Mercury Edit 2 (FIM) via FewStepsAway Gateway",
+            "Mercury Edit 2 (Next Edit), multi-line edit predictions with jump-to-edit UX, via FewStepsAway Gateway",
+            "Codestral via your connected Mistral provider API key",
+            "Mercury Edit 2 (FIM) via your connected Inception provider API key",
+            "Mercury Edit 2 (Next Edit), multi-line edit predictions with jump-to-edit UX, via your connected Inception provider API key"
+          ],
+          "description": "Model to use for inline autocomplete suggestions. If unset, the recommended default is used."
+        },
+        "fewstepsaway.ai.autocomplete.provider": {
+          "type": "string",
+          "enum": [
+            "fewstepsaway",
+            "mistral",
+            "inception"
+          ],
+          "enumDescriptions": [
+            "Use autocomplete models through FewStepsAway Gateway",
+            "Use autocomplete models through your connected Mistral provider API key",
+            "Use autocomplete models through your connected Inception provider API key"
+          ],
+          "description": "Provider to use for inline autocomplete suggestions. If unset, FewStepsAway Gateway is used."
+        },
+        "fewstepsaway.ai.autocomplete.enableAutoTrigger": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic inline completion suggestions"
+        },
+        "fewstepsaway.ai.autocomplete.enableSmartInlineTaskKeybinding": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable smart inline task keybinding"
+        },
+        "fewstepsaway.ai.autocomplete.enableChatAutocomplete": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable chat textarea autocomplete"
+        },
+        "fewstepsaway.ai.claudeCodeCompat": {
+          "type": "boolean",
+          "default": false,
+          "description": "Load CLAUDE.md instructions and skills from your Claude Code configuration directory into FewStepsAway sessions. Enable this if you want FewStepsAway to use your Claude Code instructions and skills."
+        },
+        "fewstepsaway.ai.extraCaCerts": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to a PEM file containing extra CA certificates to trust when the FewStepsAway backend makes HTTPS requests (sets NODE_EXTRA_CA_CERTS on the CLI process). Use this if you're behind a corporate proxy that performs SSL inspection. Leave empty to rely on the OS trust store."
+        },
+        "fewstepsaway.ai.autoApprove.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Start FewStepsAway with the main auto-approve toggle enabled. When enabled, permission prompts are approved automatically."
+        },
+        "fewstepsaway.ai.fontSize": {
+          "type": "number",
+          "default": 13,
+          "minimum": 10,
+          "maximum": 24,
+          "description": "Font size in pixels for the FewStepsAway webview UI."
+        },
+        "fewstepsaway.ai.browserAutomation.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable browser automation powered by Playwright. When enabled, the AI agent can interact with web pages in a visible Chrome window."
+        },
+        "fewstepsaway.ai.browserAutomation.useSystemChrome": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use your system's installed Chrome browser instead of downloading a separate Chromium instance."
+        },
+        "fewstepsaway.ai.browserAutomation.headless": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run browser automation in headless mode (no visible window). When disabled, you can watch the agent interact with the browser."
+        },
+        "fewstepsaway.ai.attention.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Play sounds when sessions complete, error, or need input"
+        },
+        "fewstepsaway.ai.attention.sound": {
+          "type": "string",
+          "default": "default",
+          "enum": [
+            "default",
+            "system",
+            "alert-01",
+            "alert-02",
+            "alert-03",
+            "alert-04",
+            "alert-05",
+            "alert-06",
+            "alert-07",
+            "alert-08",
+            "alert-09",
+            "alert-10",
+            "bip-bop-01",
+            "bip-bop-02",
+            "bip-bop-03",
+            "bip-bop-04",
+            "bip-bop-05",
+            "bip-bop-06",
+            "bip-bop-07",
+            "bip-bop-08",
+            "bip-bop-09",
+            "bip-bop-10",
+            "staplebops-01",
+            "staplebops-02",
+            "staplebops-03",
+            "staplebops-04",
+            "staplebops-05",
+            "staplebops-06",
+            "staplebops-07",
+            "nope-01",
+            "nope-02",
+            "nope-03",
+            "nope-04",
+            "nope-05",
+            "nope-06",
+            "nope-07",
+            "nope-08",
+            "nope-09",
+            "nope-10",
+            "nope-11",
+            "nope-12",
+            "yup-01",
+            "yup-02",
+            "yup-03",
+            "yup-04",
+            "yup-05",
+            "yup-06"
+          ],
+          "description": "Use different sounds for completion, input, and errors, or choose one sound for every event"
+        },
+        "fewstepsaway.ai.showTaskTimeline": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the task timeline graph in the chat header"
+        },
+        "fewstepsaway.ai.agentWorkStyle": {
+          "type": "string",
+          "scope": "application",
+          "default": "unset",
+          "enum": [
+            "unset",
+            "human-in-the-loop",
+            "autonomous",
+            "skipped"
+          ],
+          "enumDescriptions": [
+            "Show work style onboarding so you can choose again",
+            "Human in the Loop: review agent actions as they happen",
+            "High autonomy: let FewStepsAway take most actions with fewer interruptions",
+            "Onboarding was skipped without changing work style settings"
+          ],
+          "description": "Preferred agent work style. Set to Unset to show the onboarding flow again."
+        },
+        "fewstepsaway.ai.diff.renderMarkdown": {
+          "type": "boolean",
+          "default": false,
+          "description": "Render Markdown files in FewStepsAway diff viewers by default. Toggle this from a Markdown file header in the diff viewer."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "prepare:cli-binary": "bun script/local-bin.ts",
+    "compile": "bun run prepare:cli-binary -- --force && bun run rebuild-sdk && bun run typecheck && bun run lint && node esbuild.js",
+    "watch": "bun run rebuild-sdk && bun run --parallel watch:esbuild watch:tsc",
+    "watch:esbuild": "bun run prepare:cli-binary && node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "watch:cli": "bun script/watch-cli.ts",
+    "package": "bun run prepare:cli-binary && bun run rebuild-sdk && bun run typecheck && bun run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "bun run compile-tests && bun run compile && bun run lint",
+    "check-types": "tsc --noEmit",
+    "check-types:webview": "bun script/typecheck.ts --project webview-ui/tsconfig.json",
+    "typecheck": "bun run check-types:extension && bun run check-types:webview",
+    "check-types:extension": "bun script/typecheck.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "knip": "knip",
+    "check-fewstepsaway-change": "! grep -rIn 'fewstepsaway_change' . ../fewstepsaway-ui/ --exclude='package.json' --exclude='*.md' --exclude-dir='node_modules' --exclude-dir='dist' | grep -v '`fewstepsaway_change`'",
+    "lint": "eslint src webview-ui",
+    "test": "vscode-test",
+    "test:unit": "bun test tests/unit/",
+    "rebuild-sdk": "bun run --cwd ../sdk/js build",
+    "storybook": "storybook dev -p 6007",
+    "build-storybook": "storybook build -o storybook-static",
+    "test:a11y": "playwright test tests/accessibility.spec.ts",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
+    "snapshot:build": "bun script/dev-snapshot.ts build",
+    "snapshot:install": "bun script/dev-snapshot.ts install",
+    "extension": "bun script/launch.ts"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.11.3",
+    "@playwright/test": "1.57.0",
+    "@storybook/addon-a11y": "10.2.10",
+    "@storybook/addon-docs": "10.2.10",
+    "@types/diff": "^6.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/qrcode": "^1.5.6",
+    "@types/vscode": "^1.105.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.7.1",
+    "esbuild": "^0.27.2",
+    "esbuild-plugin-solid": "^0.6.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "happy-dom": "20.8.9",
+    "knip": "5.85.0",
+    "prettier": "3.6.2",
+    "qrcode": "^1.5.4",
+    "storybook": "10.2.10",
+    "storybook-solidjs-vite": "10.0.9",
+    "ts-morph": "27.0.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0",
+    "vite": "7.3.2",
+    "vite-plugin-solid": "2.11.10"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "fuzzysort": "3.1.0",
+    "@fewstepsaway/fewstepsaway-gateway": "workspace:*",
+    "@fewstepsaway/fewstepsaway-i18n": "workspace:*",
+    "@fewstepsaway/fewstepsaway-indexing": "workspace:*",
+    "@fewstepsaway/fewstepsaway-ui": "workspace:*",
+    "@fewstepsaway/plugin": "workspace:*",
+    "@fewstepsaway/sdk": "workspace:*",
+    "@opencode-ai/ui": "workspace:*",
+    "@pierre/diffs": "catalog:",
+    "@thisbeyond/solid-dnd": "0.7.5",
+    "@xterm/addon-clipboard": "0.2.0",
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/addon-unicode-graphemes": "0.4.0",
+    "@xterm/addon-web-links": "0.12.0",
+    "@xterm/xterm": "6.0.0",
+    "diff": "8.0.4",
+    "fastest-levenshtein": "^1.0.16",
+    "friendly-words": "1.3.1",
+    "ignore": "^7.0.3",
+    "js-tiktoken": "^1.0.18",
+    "lru-cache": "^11.0.2",
+    "marked": "catalog:",
+    "openai": "^4.85.4",
+    "quick-lru": "^7.0.0",
+    "simple-git": "3.36.0",
+    "solid-js": "^1.9.11",
+    "uri-js": "^4.4.1",
+    "virtua": "catalog:",
+    "web-tree-sitter": "^0.24.7",
+    "yaml": "2.8.3",
+    "zod": "^3.24.2"
+  },
+  "peerDependencies": {}
+}

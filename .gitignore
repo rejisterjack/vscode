@@ -26,3 +26,4 @@ product.overrides.json
 vscode-telemetry-docs/
 test-output.json
 references/
+.memsearch/
