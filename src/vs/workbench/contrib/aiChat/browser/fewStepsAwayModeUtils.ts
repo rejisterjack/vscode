@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { hasKey } from '../../../../base/common/types.js';
 import { getFewStepsAwayModeSortIndex, isFewStepsAwayModeId } from '../../../../ai/mode/modeIcons.js';
 import { IChatMode, IChatModeService } from '../../chat/common/chatModes.js';
 import { ChatModeKind } from '../../chat/common/constants.js';
@@ -12,8 +11,9 @@ export function readPromptMetadataString(value: unknown): string | undefined {
 	if (typeof value === 'string') {
 		return value;
 	}
-	if (value && typeof value === 'object' && hasKey(value, 'value') && typeof value.value === 'string') {
-		return value.value;
+	const nested = (value as { value?: unknown } | null | undefined)?.value;
+	if (typeof nested === 'string') {
+		return nested;
 	}
 	return undefined;
 }

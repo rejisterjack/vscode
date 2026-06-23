@@ -30,7 +30,7 @@ export interface IPromptEnhancementService {
 	 * @param draftText The user's draft prompt.
 	 * @throws Error if no provider is available or the enhancement call fails.
 	 */
-	enhance(draftText: string): Promise<string>;
+	enhance(draftText: string, preferredProviderId?: string): Promise<string>;
 	/**
 	 * Whether the enhancement service is available (i.e. a provider with a
 	 * model is configured).
@@ -59,16 +59,19 @@ export class PromptEnhancementService extends Disposable implements IPromptEnhan
 		super();
 	}
 
-	async enhance(draftText: string): Promise<string> {
+	async enhance(draftText: string, preferredProviderId?: string): Promise<string> {
 		if (!draftText.trim()) {
 			throw new Error('Cannot enhance an empty prompt.');
 		}
 
-		const defaultProvider = this.providerRegistry.getActiveProvider() as IToolEnabledProvider | undefined;
+		const preferredProvider = preferredProviderId
+			? this.providerRegistry.getProvider(preferredProviderId) as IToolEnabledProvider | undefined
+			: undefined;
+		const defaultProvider = (preferredProvider ?? this.providerRegistry.getActiveProvider()) as IToolEnabledProvider | undefined;
 		const allProviders = this.providerRegistry.getAllProviders() as unknown as readonly IToolEnabledProvider[];
 
 		const smallModel = await getSmallModel(defaultProvider, allProviders);
-		if (!smallModel) {
+		if (!smallModel?.model) {
 			throw new Error('No AI provider available for prompt enhancement. Configure an API key in Settings > AI Features.');
 		}
 

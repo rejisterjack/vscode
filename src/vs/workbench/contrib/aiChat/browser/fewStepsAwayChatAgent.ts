@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { hasKey } from '../../../../base/common/types.js';
 import { canceled, isCancellationError } from '../../../../base/common/errors.js';
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
@@ -200,8 +199,9 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 		if (typeof value === 'string') {
 			return value;
 		}
-		if (value && typeof value === 'object' && hasKey(value, 'value') && typeof value.value === 'string') {
-			return value.value;
+		const nested = (value as { value?: unknown } | null | undefined)?.value;
+		if (typeof nested === 'string') {
+			return nested;
 		}
 		return undefined;
 	}

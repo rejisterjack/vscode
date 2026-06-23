@@ -33,8 +33,8 @@ import { getOpenChatActionIdForMode } from '../../actions/chatActions.js';
 import { IToggleChatModeArgs, ToggleAgentModeActionId } from '../../actions/chatExecuteActions.js';
 import { ChatInputPickerActionViewItem, IChatInputPickerOptions } from './chatInputPickerActionItem.js';
 import { IOpenerService } from '../../../../../../platform/opener/common/opener.js';
-import { AI_CHAT_HIDE_BUILTIN_MODES_KEY, getFewStepsAwayModeIcon, getFewStepsAwayModeSortIndex, isFewStepsAwayModeId } from '../../../../../../ai/mode/modeIcons.js';
-import { getFewStepsAwayModeId } from '../../aiChat/browser/fewStepsAwayModeUtils.js';
+import { AI_CHAT_HIDE_BUILTIN_MODES_KEY, getFewStepsAwayModeIcon, getFewStepsAwayModeSortIndex } from '../../../../../../ai/mode/modeIcons.js';
+import { getFewStepsAwayModeId } from '../../../../aiChat/browser/fewStepsAwayModeUtils.js';
 
 export interface IModePickerDelegate {
 	readonly currentMode: IObservable<IChatMode>;

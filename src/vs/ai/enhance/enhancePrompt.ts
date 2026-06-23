@@ -27,6 +27,7 @@ export const ENHANCE_INSTRUCTION = [
  * in priority order. The first available one is used.
  */
 const SMALL_MODEL_FALLBACKS = [
+	{ provider: 'zai', model: 'glm-4.7-flash' },
 	{ provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
 	{ provider: 'openai', model: 'gpt-4o-mini' },
 	{ provider: 'google', model: 'gemini-2.5-flash' },
@@ -82,9 +83,16 @@ export async function getSmallModel(
 		}
 	}
 
-	// Last resort: use the default provider with its default model.
+	// Last resort: use the default provider with its first available model.
 	if (defaultProvider) {
-		return { provider: defaultProvider, model: '' };
+		try {
+			const models = await defaultProvider.getModels();
+			if (models.length > 0) {
+				return { provider: defaultProvider, model: models[0].id };
+			}
+		} catch {
+			// Fall through.
+		}
 	}
 
 	return undefined;
@@ -118,7 +126,8 @@ export async function enhancePrompt(
 		model: modelRef,
 		system,
 		messages,
-		generation
+		generation,
+		toolChoice: { type: 'none' },
 	});
 
 	return cleanResult(result.text);
