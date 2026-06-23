@@ -48,17 +48,30 @@ export async function getSmallModel(
 	defaultProvider: IToolEnabledProvider | undefined,
 	availableProviders: readonly IToolEnabledProvider[]
 ): Promise<{ provider: IToolEnabledProvider; model: string } | undefined> {
+	// Filter to providers that are actually usable right now: either they
+	// don't require an API key (e.g. local Ollama) or the user has supplied
+	// one in settings. This prevents us from picking a provider from the
+	// fallback list whose catalog lists a small model but whose key is
+	// unconfigured (which would then throw at request time).
+	const configuredProviders: IToolEnabledProvider[] = [];
+	for (const p of availableProviders) {
+		if (await isProviderConfigured(p)) {
+			configuredProviders.push(p);
+		}
+	}
+	const effectiveDefault = defaultProvider && await isProviderConfigured(defaultProvider) ? defaultProvider : undefined;
+
 	// If the default provider has a known small model, use it.
-	if (defaultProvider) {
+	if (effectiveDefault) {
 		try {
-			const models = await defaultProvider.getModels();
+			const models = await effectiveDefault.getModels();
 			for (const fallback of SMALL_MODEL_FALLBACKS) {
-				if (fallback.provider === defaultProvider.id) {
+				if (fallback.provider === effectiveDefault.id) {
 					const match = models.find(m =>
 						m.id === fallback.model || m.id.startsWith(fallback.model.split('-').slice(0, 2).join('-'))
 					);
 					if (match) {
-						return { provider: defaultProvider, model: match.id };
+						return { provider: effectiveDefault, model: match.id };
 					}
 				}
 			}
@@ -67,9 +80,9 @@ export async function getSmallModel(
 		}
 	}
 
-	// Search all providers for a small model.
+	// Search all configured providers for a small model.
 	for (const fallback of SMALL_MODEL_FALLBACKS) {
-		const provider = availableProviders.find(p => p.id === fallback.provider);
+		const provider = configuredProviders.find(p => p.id === fallback.provider);
 		if (provider) {
 			try {
 				const models = await provider.getModels();
@@ -83,12 +96,12 @@ export async function getSmallModel(
 		}
 	}
 
-	// Last resort: use the default provider with its first available model.
-	if (defaultProvider) {
+	// Last resort: use any configured provider with its first available model.
+	if (effectiveDefault) {
 		try {
-			const models = await defaultProvider.getModels();
+			const models = await effectiveDefault.getModels();
 			if (models.length > 0) {
-				return { provider: defaultProvider, model: models[0].id };
+				return { provider: effectiveDefault, model: models[0].id };
 			}
 		} catch {
 			// Fall through.
@@ -96,6 +109,20 @@ export async function getSmallModel(
 	}
 
 	return undefined;
+}
+
+/**
+ * Whether a provider is ready to serve requests: either it does not require
+ * an API key (local providers) or one has been supplied in settings. Wraps
+ * the public `validateConfig()` so we never select a provider whose model
+ * catalog we can read but whose key is missing.
+ */
+async function isProviderConfigured(provider: IToolEnabledProvider): Promise<boolean> {
+	try {
+		return await provider.validateConfig();
+	} catch {
+		return false;
+	}
 }
 
 /**

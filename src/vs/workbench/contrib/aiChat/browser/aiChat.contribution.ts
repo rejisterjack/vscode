@@ -25,6 +25,7 @@ import './fewStepsAwayLanguageModelProvider.contribution.js';
 import './fewStepsAwayChatModes.contribution.js';
 import './fewStepsAwayProviderPicker.contribution.js';
 import './actions/fewStepsAwayEnhancePromptActions.js';
+import './actions/fewStepsAwayGenerateCommitMessageActions.js';
 
 // Re-export for backwards compatibility with any external importers.
 export { FewStepsAwayChatViewId, FewStepsAwayChatContainerId };

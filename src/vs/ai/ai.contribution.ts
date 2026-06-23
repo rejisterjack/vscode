@@ -20,6 +20,7 @@ import { IAttentionService, AttentionService } from './common/attentionService.j
 import { AIResponse, AIResponseChunk } from './common/types/ai.types.js';
 import { IModelsDevCatalog, ModelsDevCatalog } from './provider/common/modelsDevCatalog.js';
 import { IPromptEnhancementService, PromptEnhancementService } from './enhance/promptEnhancementService.js';
+import { ICommitMessageService, CommitMessageService } from './scm/commitMessageService.js';
 import { IAgentLoop, AgentLoop } from './agent/agentLoop.js';
 import { IFewStepsAwayAuthService, FewStepsAwayAuthService } from './auth/fewStepsAwayAuthService.js';
 import { registerLLMProviders } from './provider/providers.contribution.js';
@@ -199,5 +200,6 @@ registerSingleton(IProviderRegistry, ProviderRegistry, InstantiationType.Delayed
 registerSingleton(IAttentionService, AttentionService, InstantiationType.Delayed);
 registerSingleton(IModelsDevCatalog, ModelsDevCatalog, InstantiationType.Delayed);
 registerSingleton(IPromptEnhancementService, PromptEnhancementService, InstantiationType.Delayed);
+registerSingleton(ICommitMessageService, CommitMessageService, InstantiationType.Delayed);
 registerSingleton(IAgentLoop, AgentLoop, InstantiationType.Delayed);
 registerSingleton(IFewStepsAwayAuthService, FewStepsAwayAuthService, InstantiationType.Eager);

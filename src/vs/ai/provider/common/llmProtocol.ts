@@ -319,6 +319,12 @@ export async function generateRoute(
 				if (!usage && event.usage) { usage = event.usage; }
 				if (!finishReason) { finishReason = event.reason; }
 				break;
+			case 'provider-error':
+				// The provider emitted an in-stream error (e.g. model not found,
+				// content filter, upstream 4xx). Surface it rather than returning
+				// an empty result, which downstream callers can't distinguish
+				// from a legitimately empty completion.
+				throw new Error(event.message);
 		}
 	}
 
