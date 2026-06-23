@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepsAway Team. All rights reserved.
- *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import '../../chat/browser/widgetHosts/viewPane/media/chatViewPane.css';
@@ -20,14 +20,15 @@ import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { editorBackground } from '../../../../platform/theme/common/colorRegistry.js';
-import { IBackendService } from '../../../../ai/backend/backendService.js';
-import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { IWorkbenchLayoutService } from '../../../services/layout/browser/layoutService.js';
 import { SIDE_BAR_FOREGROUND } from '../../../common/theme.js';
 import { ChatWidget } from '../../chat/browser/widget/chatWidget.js';
 import { IChatModelReference, IChatService } from '../../chat/common/chatService/chatService.js';
+import { IChatModeService } from '../../chat/common/chatModes.js';
 import { ChatAgentLocation, ChatModeKind } from '../../chat/common/constants.js';
+import { AI_CHAT_HIDE_BUILTIN_MODES_KEY } from '../../../../ai/mode/modeIcons.js';
 import { FewStepsAwayChatViewId } from './aiChatIds.js';
+import { findFewStepsAwayMode, isHiddenBuiltinMode } from './fewStepsAwayModeUtils.js';
 
 /**
  * FewStepsAway chat view using VS Code's native ChatWidget.
@@ -51,8 +52,7 @@ export class FewStepsAwayChatViewPane extends ViewPane {
 		@IHoverService hoverService: IHoverService,
 		@ILogService private readonly logService: ILogService,
 		@IChatService private readonly chatService: IChatService,
-		@IBackendService private readonly backendService: IBackendService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IChatModeService private readonly chatModeService: IChatModeService,
 		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
 	) {
 		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, hoverService);
@@ -94,6 +94,7 @@ export class FewStepsAwayChatViewPane extends ViewPane {
 				enableWorkingSet: 'explicit',
 				supportsChangingModes: true,
 				dndContainer: container,
+				defaultMode: findFewStepsAwayMode(this.chatModeService, 'coding'),
 			},
 			{
 				listForeground: SIDE_BAR_FOREGROUND,
@@ -106,15 +107,18 @@ export class FewStepsAwayChatViewPane extends ViewPane {
 
 		this._widget.render(chatControlsContainer);
 
+		this._register(this.chatModeService.onDidChangeChatModes(() => this.applyFewStepsAwayDefaultMode()));
+		this.applyFewStepsAwayDefaultMode();
+
 		this._register(this.onDidChangeBodyVisibility(visible => {
 			this._widget.setVisible(visible);
 			if (visible) {
-				void this.ensureBackendAndModel();
+				void this.ensureModel();
 			}
 		}));
 
 		this._widget.setVisible(this.isBodyVisible());
-		void this.ensureBackendAndModel();
+		void this.ensureModel();
 	}
 
 	protected override layoutBody(height: number, width: number): void {
@@ -130,23 +134,12 @@ export class FewStepsAwayChatViewPane extends ViewPane {
 	override setExpanded(expanded: boolean): boolean {
 		const changed = super.setExpanded(expanded);
 		if (changed && expanded) {
-			void this.ensureBackendAndModel();
+			void this.ensureModel();
 		}
 		return changed;
 	}
 
-	private getWorkspaceDirectory(): string {
-		const folders = this.workspaceContextService.getWorkspace().folders;
-		return folders.length > 0 ? folders[0].uri.fsPath : '';
-	}
-
-	private async ensureBackendAndModel(): Promise<void> {
-		try {
-			await this.backendService.ensureConnected(this.getWorkspaceDirectory());
-		} catch (err) {
-			this.logService.error('[FewStepsAwayChatViewPane] Backend connection failed:', err);
-		}
-
+	private async ensureModel(): Promise<void> {
 		if (this.modelRef.value || this.initializingModel || !this._widget) {
 			return;
 		}
@@ -165,6 +158,24 @@ export class FewStepsAwayChatViewPane extends ViewPane {
 
 	private async clearChat(): Promise<void> {
 		this.modelRef.clear();
-		await this.ensureBackendAndModel();
+		await this.ensureModel();
+	}
+
+	private applyFewStepsAwayDefaultMode(): void {
+		if (!this.configurationService.getValue<boolean>(AI_CHAT_HIDE_BUILTIN_MODES_KEY)) {
+			return;
+		}
+		const input = this._widget?.input;
+		if (!input) {
+			return;
+		}
+		const currentMode = input.currentModeObs.get();
+		if (!isHiddenBuiltinMode(currentMode)) {
+			return;
+		}
+		const codeMode = findFewStepsAwayMode(this.chatModeService, 'coding');
+		if (codeMode) {
+			input.setChatMode(codeMode.id, false);
+		}
 	}
 }

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepsAway Team. All rights reserved.
- *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
@@ -17,12 +17,18 @@ import { FewStepsAwayChatViewPane } from './aiChatViewPane.js';
 import { FewStepsAwayChatViewId, FewStepsAwayChatContainerId } from './aiChatIds.js';
 import './commands.js';
 import './restoreChatView.contribution.js';
+import './fewStepsAwayAuth.contribution.js';
+import './fewStepsAwayAuthCallbackHandler.js';
+import './fewStepsAwayChatWelcome.contribution.js';
 import './fewStepsAwayChatAgent.contribution.js';
+import './fewStepsAwayLanguageModelProvider.contribution.js';
+import './fewStepsAwayChatModes.contribution.js';
+import './fewStepsAwayProviderPicker.contribution.js';
 
 // Re-export for backwards compatibility with any external importers.
 export { FewStepsAwayChatViewId, FewStepsAwayChatContainerId };
 
-// Register our view icon (standard chat codicon — no custom branding asset).
+// Register our view icon (standard chat codicon -- no custom branding asset).
 const fewstepsawayChatIcon = registerIcon(
 	'fewstepsaway-chat-view-icon',
 	Codicon.commentDiscussion,

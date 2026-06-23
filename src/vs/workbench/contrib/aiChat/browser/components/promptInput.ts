@@ -1,116 +1,96 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepsAway Team. All rights reserved.
- *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { $, append, addDisposableListener, EventType, hide } from '../../../../../base/browser/dom.js';
+import { $, append, addDisposableListener, EventType } from '../../../../../base/browser/dom.js';
 import { ActionBar, ActionsOrientation } from '../../../../../base/browser/ui/actionbar/actionbar.js';
-import { SelectBox } from '../../../../../base/browser/ui/selectBox/selectBox.js';
 import { Action } from '../../../../../base/common/actions.js';
 import { Codicon } from '../../../../../base/common/codicons.js';
 import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
 import { ThemeIcon } from '../../../../../base/common/themables.js';
 import { localize } from '../../../../../nls.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
-import { IContextViewService } from '../../../../../platform/contextview/browser/contextView.js';
-import { defaultSelectBoxStyles } from '../../../../../platform/theme/browser/defaultStyles.js';
+import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
+import { AIMode } from '../../../../../ai/common/types/ai.types.js';
+import { IModeRegistry } from '../../../../../ai/mode/modeRegistry.js';
+import { IModelsDevCatalog } from '../../../../../ai/provider/common/modelsDevCatalog.js';
 
-const MODES = ['coding', 'architect', 'debug', 'learning'] as const;
-const MODEL_PRESETS = [
-	'',
-	'anthropic/claude-3.5-sonnet',
-	'openai/gpt-4o',
-	'google/gemini-2.0-flash',
-];
+const MODES: readonly AIMode[] = ['coding', 'ask', 'architect', 'debug', 'plan', 'learning'];
 
-function getModeLabel(mode: string): string {
+function getModeLabel(mode: AIMode): string {
 	switch (mode) {
-		case 'coding': return localize('fewstepsaway.mode.coding', "Coding");
+		case 'coding': return localize('fewstepsaway.mode.coding', "Code");
+		case 'ask': return localize('fewstepsaway.mode.ask', "Ask");
 		case 'architect': return localize('fewstepsaway.mode.architect', "Architect");
 		case 'debug': return localize('fewstepsaway.mode.debug', "Debug");
+		case 'plan': return localize('fewstepsaway.mode.plan', "Plan");
 		case 'learning': return localize('fewstepsaway.mode.learning', "Learning");
-		default: return mode;
 	}
 }
 
-function getModelLabel(model: string): string {
-	return model || localize('fewstepsaway.chat.modelDefault', "Default");
-}
-
 /**
- * Prompt input with standard VS Code select boxes and toolbar actions.
+ * Cursor-style prompt input: rounded box, mode/model pills, attach + send.
  */
 export class PromptInput extends Disposable {
 	private readonly container: HTMLElement;
-	private readonly attachmentsEl: HTMLElement;
-	private readonly statusEl: HTMLElement;
 	private readonly textarea: HTMLTextAreaElement;
+	private readonly modePill: HTMLElement;
+	private readonly modelPill: HTMLElement;
 	private readonly sendAction: Action;
-	private readonly modeSelect: SelectBox;
-	private readonly modelSelect: SelectBox;
+	private readonly attachAction: Action;
 
 	private isStreaming = false;
 	private isConnected = false;
 	private onSendCallback: ((text: string) => void) | null = null;
 	private onStopCallback: (() => void) | null = null;
+	private modelOptions: string[] = [''];
 
 	constructor(
 		parent: HTMLElement,
-		@IContextViewService private readonly contextViewService: IContextViewService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IModeRegistry private readonly modeRegistry: IModeRegistry,
+		@IModelsDevCatalog private readonly modelsCatalog: IModelsDevCatalog,
+		@IContextMenuService private readonly contextMenuService: IContextMenuService,
 	) {
 		super();
 
 		this.container = append(parent, $('div.fewstepsaway-chat-prompt-input'));
 
-		this.statusEl = append(this.container, $('div.fewstepsaway-chat-status'));
-		hide(this.statusEl);
+		const inputBox = append(this.container, $('div.fewstepsaway-chat-input-box'));
 
-		this.attachmentsEl = append(this.container, $('div.fewstepsaway-chat-attachments'));
-		hide(this.attachmentsEl);
-
-		const inputContainer = append(this.container, $('div.fewstepsaway-chat-input-container'));
 		this.textarea = document.createElement('textarea');
 		this.textarea.className = 'fewstepsaway-chat-input';
-		this.textarea.placeholder = localize('fewstepsaway.chat.input.placeholder', "Ask anything…");
-		this.textarea.rows = 2;
+		this.textarea.placeholder = localize('fewstepsaway.chat.input.followUp', "Add a follow-up");
+		this.textarea.rows = 1;
 		this.textarea.setAttribute('aria-label', localize('fewstepsaway.chat.input.aria', "Chat message input"));
-		inputContainer.appendChild(this.textarea);
+		inputBox.appendChild(this.textarea);
 
-		const toolbars = append(this.container, $('div.fewstepsaway-chat-input-toolbars'));
-		const toolbar = append(toolbars, $('div.fewstepsaway-chat-input-toolbar'));
+		const footer = append(inputBox, $('div.fewstepsaway-chat-input-footer'));
 
-		const currentMode = this.configurationService.getValue<string>('ai.chat.mode') ?? 'coding';
-		const modeIdx = MODES.indexOf(currentMode as typeof MODES[number]);
-		const modeIndex = modeIdx >= 0 ? modeIdx : 0;
-		this.modeSelect = this._register(new SelectBox(
-			MODES.map(m => ({ text: getModeLabel(m) })),
-			modeIndex,
-			this.contextViewService,
-			defaultSelectBoxStyles,
-			{ ariaLabel: localize('fewstepsaway.chat.modeSelect', "Chat mode") }
+		const pills = append(footer, $('div.fewstepsaway-chat-input-pills'));
+		this.modePill = append(pills, $('button.fewstepsaway-chat-pill.fewstepsaway-chat-mode-pill'));
+		this.modelPill = append(pills, $('button.fewstepsaway-chat-pill.fewstepsaway-chat-model-pill'));
+
+		const actions = append(footer, $('div.fewstepsaway-chat-input-actions'));
+		const attachContainer = append(actions, $('div'));
+		const attachBar = this._register(new ActionBar(attachContainer, { orientation: ActionsOrientation.HORIZONTAL }));
+		this.attachAction = this._register(new Action(
+			'fewstepsaway.chat.attach',
+			'',
+			ThemeIcon.asClassName(Codicon.attach),
+			true,
+			() => { /* future: file attach */ }
 		));
-		this.modeSelect.render(append(toolbar, $('div.fewstepsaway-chat-toolbar-mode')));
+		this.attachAction.tooltip = localize('fewstepsaway.chat.attach', "Attach context");
+		attachBar.push(this.attachAction, { icon: true, label: false });
 
-		const modelOptions = this.buildModelOptions();
-		const currentModel = this.configurationService.getValue<string>('ai.chat.model') ?? '';
-		const modelIndex = modelOptions.findIndex(m => m === currentModel);
-		const safeModelIndex = modelIndex >= 0 ? modelIndex : 0;
-		this.modelSelect = this._register(new SelectBox(
-			modelOptions.map(m => ({ text: getModelLabel(m) })),
-			safeModelIndex,
-			this.contextViewService,
-			defaultSelectBoxStyles,
-			{ ariaLabel: localize('fewstepsaway.chat.modelSelect', "Chat model") }
-		));
-		this.modelSelect.render(append(toolbar, $('div.fewstepsaway-chat-toolbar-model')));
-
-		const sendContainer = append(toolbar, $('div.fewstepsaway-chat-toolbar-send'));
+		const sendContainer = append(actions, $('div'));
 		const sendBar = this._register(new ActionBar(sendContainer, { orientation: ActionsOrientation.HORIZONTAL }));
 		this.sendAction = this._register(new Action(
 			'fewstepsaway.chat.send',
 			'',
-			ThemeIcon.asClassName(Codicon.send),
+			ThemeIcon.asClassName(Codicon.arrowUp),
 			false,
 			() => {
 				if (this.isStreaming) {
@@ -123,12 +103,17 @@ export class PromptInput extends Disposable {
 		this.sendAction.tooltip = localize('fewstepsaway.chat.send', "Send message");
 		sendBar.push(this.sendAction, { icon: true, label: false });
 
-		this._register(this.modeSelect.onDidSelect(e => {
-			void this.configurationService.updateValue('ai.chat.mode', MODES[e.index]);
+		this.updateModePill();
+		void this.refreshModelOptions();
+
+		this._register(addDisposableListener(this.modePill, EventType.CLICK, e => {
+			e.preventDefault();
+			this.showModeMenu();
 		}));
 
-		this._register(this.modelSelect.onDidSelect(e => {
-			void this.configurationService.updateValue('ai.chat.model', modelOptions[e.index]);
+		this._register(addDisposableListener(this.modelPill, EventType.CLICK, e => {
+			e.preventDefault();
+			this.showModelMenu();
 		}));
 
 		this._register(addDisposableListener(this.textarea, EventType.INPUT, () => {
@@ -144,37 +129,94 @@ export class PromptInput extends Disposable {
 			}
 		}));
 
+		this._register(this.configurationService.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('ai.chat.mode') || e.affectsConfiguration('ai.chat.model')) {
+				this.updateModePill();
+				void this.refreshModelOptions();
+			}
+		}));
+
 		this.updateSendEnabled();
+	}
+
+	private updateModePill(): void {
+		clearChildren(this.modePill);
+		const icon = append(this.modePill, $('span.fewstepsaway-chat-pill-icon'));
+		icon.classList.add(...ThemeIcon.asClassNameArray(Codicon.sparkle));
+		const mode = this.configurationService.getValue<AIMode>('ai.chat.mode') ?? 'coding';
+		append(this.modePill, document.createTextNode(getModeLabel(mode)));
+		const chevron = append(this.modePill, $('span.fewstepsaway-chat-pill-chevron'));
+		chevron.classList.add(...ThemeIcon.asClassNameArray(Codicon.chevronDown));
+	}
+
+	private async refreshModelOptions(): Promise<void> {
+		const options = [''];
+		const providerId = this.configurationService.getValue<string>('ai.provider.default') ?? 'openai';
+		try {
+			const models = await this.modelsCatalog.getModels(providerId);
+			for (const m of models.slice(0, 20)) {
+				options.push(`${providerId}/${m.id}`);
+			}
+		} catch { /* ignore */ }
+
+		const current = this.configurationService.getValue<string>('ai.chat.model') ?? '';
+		if (current && !options.includes(current)) {
+			options.push(current);
+		}
+		this.modelOptions = options;
+		this.updateModelPill();
+	}
+
+	private updateModelPill(): void {
+		clearChildren(this.modelPill);
+		const current = this.configurationService.getValue<string>('ai.chat.model') ?? '';
+		const label = current
+			? (current.includes('/') ? current.split('/').pop()! : current)
+			: localize('fewstepsaway.chat.modelAuto', "Auto");
+		this.modelPill.appendChild(document.createTextNode(label));
+		const chevron = append(this.modelPill, $('span.fewstepsaway-chat-pill-chevron'));
+		chevron.classList.add(...ThemeIcon.asClassNameArray(Codicon.chevronDown));
+	}
+
+	private showModeMenu(): void {
+		const actions = MODES.map(mode => new Action(
+			`fewstepsaway.mode.${mode}`,
+			getModeLabel(mode),
+			undefined,
+			true,
+			() => {
+				void this.configurationService.updateValue('ai.chat.mode', mode);
+				this.modeRegistry.setActiveMode(mode);
+				this.updateModePill();
+			}
+		));
+		this.contextMenuService.showContextMenu({
+			getAnchor: () => this.modePill.getBoundingClientRect(),
+			getActions: () => actions,
+		});
+	}
+
+	private showModelMenu(): void {
+		const actions = this.modelOptions.map((model, i) => new Action(
+			`fewstepsaway.model.${i}`,
+			model || localize('fewstepsaway.chat.modelAuto', "Auto"),
+			undefined,
+			true,
+			() => {
+				void this.configurationService.updateValue('ai.chat.model', model);
+				this.updateModelPill();
+			}
+		));
+		this.contextMenuService.showContextMenu({
+			getAnchor: () => this.modelPill.getBoundingClientRect(),
+			getActions: () => actions,
+		});
 	}
 
 	setConnected(connected: boolean): void {
 		this.isConnected = connected;
 		this.textarea.disabled = !connected && !this.isStreaming;
 		this.updateSendEnabled();
-	}
-
-	private buildModelOptions(): string[] {
-		const current = this.configurationService.getValue<string>('ai.chat.model') ?? '';
-		const options = [...MODEL_PRESETS];
-		if (current && !options.includes(current)) {
-			options.push(current);
-		}
-		return options;
-	}
-
-	setStatus(text: string, _kind: 'info' | 'error' | 'connecting' = 'info'): void {
-		if (!text) {
-			hide(this.statusEl);
-			return;
-		}
-		this.statusEl.textContent = text;
-		this.statusEl.className = 'fewstepsaway-chat-status';
-		this.statusEl.style.display = 'block';
-	}
-
-	clearStatus(): void {
-		hide(this.statusEl);
-		this.statusEl.textContent = '';
 	}
 
 	setSuggestion(text: string): void {
@@ -216,17 +258,13 @@ export class PromptInput extends Disposable {
 			this.sendAction.class = ThemeIcon.asClassName(Codicon.debugStop);
 			this.sendAction.tooltip = localize('fewstepsaway.chat.stop', "Stop");
 		} else {
-			this.sendAction.class = ThemeIcon.asClassName(Codicon.send);
+			this.sendAction.class = ThemeIcon.asClassName(Codicon.arrowUp);
 			this.sendAction.tooltip = localize('fewstepsaway.chat.send', "Send message");
 		}
 	}
 
 	private updateSendEnabled(): void {
-		if (this.isStreaming) {
-			this.sendAction.enabled = true;
-			return;
-		}
-		this.sendAction.enabled = this.isConnected && this.textarea.value.trim().length > 0;
+		this.sendAction.enabled = this.isStreaming || (this.isConnected && this.textarea.value.trim().length > 0);
 	}
 
 	private handleSend(): void {
@@ -239,6 +277,12 @@ export class PromptInput extends Disposable {
 
 	private autoGrow(): void {
 		this.textarea.style.height = 'auto';
-		this.textarea.style.height = `${Math.min(this.textarea.scrollHeight, 160)}px`;
+		this.textarea.style.height = `${Math.min(this.textarea.scrollHeight, 200)}px`;
+	}
+}
+
+function clearChildren(el: HTMLElement): void {
+	while (el.firstChild) {
+		el.removeChild(el.firstChild);
 	}
 }

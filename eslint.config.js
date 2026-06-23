@@ -1575,6 +1575,20 @@ export default tseslint.config(
 					]
 				},
 				{
+					'target': 'src/vs/ai/**',
+					'layer': 'browser',
+					'restrictions': [
+						'vs/base/~',
+						'vs/base/parts/*/~',
+						'vs/platform/*/~',
+						'vs/editor/~',
+						'vs/editor/contrib/*/~',
+						'vs/workbench/services/*/~',
+						'vs/ai/**',
+						'child_process'
+					]
+				},
+				{
 					'target': 'src/vs/editor/standalone/~',
 					'restrictions': [
 						'vs/base/~',
@@ -1684,6 +1698,7 @@ export default tseslint.config(
 						'vs/platform/*/~',
 						'vs/editor/~',
 						'vs/editor/contrib/*/~',
+						'vs/ai/**',
 						'vs/workbench/~',
 						'vs/workbench/services/*/~',
 						'vs/workbench/contrib/*/~',
@@ -1808,6 +1823,7 @@ export default tseslint.config(
 						'vs/editor/~',
 						'vs/editor/contrib/*/~',
 						'vs/editor/editor.all.js',
+						'vs/ai/**',
 						'vs/workbench/~',
 						'vs/workbench/api/~',
 						'vs/workbench/services/*/~',

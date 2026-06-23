@@ -21,6 +21,8 @@ import { ITelemetryService } from '../../../../../../platform/telemetry/common/t
 import { TelemetryTrustedValue } from '../../../../../../platform/telemetry/common/telemetryUtils.js';
 import { ChatEntitlement, IChatEntitlementService } from '../../../../../services/chat/common/chatEntitlementService.js';
 import { MANAGE_CHAT_COMMAND_ID } from '../../../common/constants.js';
+import { AI_CHAT_HIDE_BUILTIN_MODES_KEY, FEWSTEPSAWAY_OPEN_PROVIDER_SETTINGS_COMMAND_ID } from '../../../../../../ai/mode/modeIcons.js';
+import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
 import { ILanguageModelChatMetadataAndIdentifier } from '../../../common/languageModels.js';
 import { DEFAULT_MODEL_PICKER_CATEGORY } from '../../../common/widget/input/modelPickerWidget.js';
 import { ChatInputPickerActionViewItem, IChatInputPickerOptions } from './chatInputPickerActionItem.js';
@@ -89,10 +91,22 @@ function modelDelegateToWidgetActionsProvider(delegate: IModelPickerDelegate, te
 	};
 }
 
-function getModelPickerActionBarActionProvider(commandService: ICommandService, chatEntitlementService: IChatEntitlementService, productService: IProductService): IActionProvider {
+function getModelPickerActionBarActionProvider(commandService: ICommandService, chatEntitlementService: IChatEntitlementService, productService: IProductService, configurationService: IConfigurationService): IActionProvider {
 
 	const actionProvider: IActionProvider = {
 		getActions: () => {
+			const hideBuiltinModes = configurationService.getValue<boolean>(AI_CHAT_HIDE_BUILTIN_MODES_KEY) ?? false;
+			if (hideBuiltinModes) {
+				return [{
+					id: 'fewstepsaway.configureProviders',
+					label: localize('fewstepsaway.configureProviders', "Configure AI Providers..."),
+					enabled: true,
+					tooltip: localize('fewstepsaway.configureProviders.tooltip', "Add API keys and configure AI model providers"),
+					class: undefined,
+					run: () => commandService.executeCommand(FEWSTEPSAWAY_OPEN_PROVIDER_SETTINGS_COMMAND_ID),
+				}];
+			}
+
 			const additionalActions: IAction[] = [];
 			if (
 				chatEntitlementService.entitlement === ChatEntitlement.Free ||
@@ -154,6 +168,7 @@ export class ModelPickerActionItem extends ChatInputPickerActionViewItem {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ICommandService commandService: ICommandService,
 		@IChatEntitlementService chatEntitlementService: IChatEntitlementService,
+		@IConfigurationService configurationService: IConfigurationService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IProductService productService: IProductService,
@@ -167,7 +182,7 @@ export class ModelPickerActionItem extends ChatInputPickerActionViewItem {
 
 		const modelPickerActionWidgetOptions: Omit<IActionWidgetDropdownOptions, 'label' | 'labelRenderer'> = {
 			actionProvider: modelDelegateToWidgetActionsProvider(delegate, telemetryService, pickerOptions),
-			actionBarActionProvider: getModelPickerActionBarActionProvider(commandService, chatEntitlementService, productService),
+			actionBarActionProvider: getModelPickerActionBarActionProvider(commandService, chatEntitlementService, productService, configurationService),
 			reporter: { id: 'ChatModelPicker', name: 'ChatModelPicker', includeOptions: true },
 		};
 

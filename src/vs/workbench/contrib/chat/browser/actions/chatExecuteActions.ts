@@ -504,11 +504,7 @@ export class OpenSessionTargetPickerAction extends Action2 {
 				{
 					id: MenuId.ChatInput,
 					order: 0,
-					when: ContextKeyExpr.and(
-						ChatContextKeys.enabled,
-						ChatContextKeys.location.isEqualTo(ChatAgentLocation.Chat),
-						ChatContextKeys.inQuickChat.negate(),
-						ChatContextKeys.chatSessionIsEmpty),
+					when: ContextKeyExpr.false(), // FewStepsAway: native agent only -- no Local/Background/Cloud session picker
 					group: 'navigation',
 				},
 			]
@@ -539,11 +535,7 @@ export class OpenDelegationPickerAction extends Action2 {
 				{
 					id: MenuId.ChatInput,
 					order: 0.5,
-					when: ContextKeyExpr.and(
-						ChatContextKeys.enabled,
-						ChatContextKeys.location.isEqualTo(ChatAgentLocation.Chat),
-						ChatContextKeys.inQuickChat.negate(),
-						ChatContextKeys.chatSessionIsEmpty.negate()),
+					when: ContextKeyExpr.false(), // FewStepsAway: native agent only -- no delegation session picker
 					group: 'navigation',
 				},
 			]

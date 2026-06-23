@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepsAway Team. All rights reserved.
- *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable, IDisposable } from '../base/common/lifecycle.js';
@@ -18,6 +18,16 @@ import { ContextManager } from './context/contextManager.js';
 import { ChatService as ChatServiceImpl } from './chat/chatService.js';
 import { IAttentionService, AttentionService } from './common/attentionService.js';
 import { AIResponse, AIResponseChunk } from './common/types/ai.types.js';
+import { IModelsDevCatalog, ModelsDevCatalog } from './provider/common/modelsDevCatalog.js';
+import { IPromptEnhancementService, PromptEnhancementService } from './enhance/promptEnhancementService.js';
+import { IAgentLoop, AgentLoop } from './agent/agentLoop.js';
+import { IFewStepsAwayAuthService, FewStepsAwayAuthService } from './auth/fewStepsAwayAuthService.js';
+import { registerLLMProviders } from './provider/providers.contribution.js';
+import { registerBuiltinTools } from './tool/tools.contribution.js';
+import { IModeRegistry } from './mode/modeRegistry.js';
+import { registerBuiltinModes } from './mode/modes.contribution.js';
+import { registerCodeActions } from './codeActions/codeActions.contribution.js';
+import { IAutocompleteServiceManager } from './suggestion/autocompleteServiceManager.js';
 
 /**
  * Minimal AIService implementation.
@@ -26,10 +36,34 @@ import { AIResponse, AIResponseChunk } from './common/types/ai.types.js';
 export class AIService extends Disposable implements IAIService {
 	readonly _serviceBrand: undefined;
 
+	private providersRegistered = false;
+
 	constructor(
-		@IProviderRegistry private readonly providerRegistry: IProviderRegistry
+		@IProviderRegistry private readonly providerRegistry: IProviderRegistry,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super();
+		this.ensureRegistered();
+	}
+
+	/**
+	 * Lazily register all LLM providers, tools, and modes. Safe to call
+	 * multiple times -- does nothing after the first registration.
+	 */
+	private ensureRegistered(): void {
+		if (this.providersRegistered) { return; }
+		this.providersRegistered = true;
+		try {
+			registerLLMProviders(this.instantiationService, this.providerRegistry);
+			registerBuiltinTools(this.instantiationService);
+			const modeRegistry = this.instantiationService.invokeFunction(accessor => accessor.get(IModeRegistry));
+			registerBuiltinModes(modeRegistry);
+			registerCodeActions(this.instantiationService);
+			this.instantiationService.invokeFunction(accessor => accessor.get(IAutocompleteServiceManager)).ensureProviderRegistered();
+		} catch (err) {
+			// Registration failures must not crash the workbench.
+			console.error('[AIService] Failed to register AI providers/tools/modes:', err);
+		}
 	}
 
 	private readonly _onWillSendRequest = this._register(new Emitter<AIRequest>());
@@ -89,7 +123,7 @@ export class AIService extends Disposable implements IAIService {
 }
 
 /**
- * BackendService implementation — thin facade over ConnectionService.
+ * BackendService implementation -- thin facade over ConnectionService.
  * Manages the CLI backend lifecycle and provides typed HTTP/SSE access.
  */
 export class BackendService extends Disposable implements IBackendService {
@@ -158,8 +192,12 @@ export class BackendService extends Disposable implements IBackendService {
 // --- Service registrations --------------------------------------------------
 
 registerSingleton(IBackendService, BackendService, InstantiationType.Delayed);
-registerSingleton(IChatService, ChatServiceImpl as any, InstantiationType.Delayed);
-registerSingleton(IAIService, AIService as any, InstantiationType.Delayed);
-registerSingleton(IContextManager, ContextManager as any, InstantiationType.Delayed);
-registerSingleton(IProviderRegistry, ProviderRegistry as any, InstantiationType.Delayed);
-registerSingleton(IAttentionService, AttentionService as any, InstantiationType.Delayed);
+registerSingleton(IChatService, ChatServiceImpl, InstantiationType.Delayed);
+registerSingleton(IAIService, AIService, InstantiationType.Delayed);
+registerSingleton(IContextManager, ContextManager, InstantiationType.Delayed);
+registerSingleton(IProviderRegistry, ProviderRegistry, InstantiationType.Delayed);
+registerSingleton(IAttentionService, AttentionService, InstantiationType.Delayed);
+registerSingleton(IModelsDevCatalog, ModelsDevCatalog, InstantiationType.Delayed);
+registerSingleton(IPromptEnhancementService, PromptEnhancementService, InstantiationType.Delayed);
+registerSingleton(IAgentLoop, AgentLoop, InstantiationType.Delayed);
+registerSingleton(IFewStepsAwayAuthService, FewStepsAwayAuthService, InstantiationType.Eager);

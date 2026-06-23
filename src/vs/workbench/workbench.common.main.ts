@@ -441,6 +441,11 @@ import './contrib/opener/browser/opener.contribution.js';
 // AI Native Configuration & Services
 import '../ai/common/configuration.js';
 import '../ai/ai.contribution.js';
+import '../ai/provider/providers.contribution.js';
+import '../ai/tool/tools.contribution.js';
+import '../ai/mode/modes.contribution.js';
+import '../ai/suggestion/suggestion.contribution.js';
+import '../ai/codeActions/codeActions.contribution.js';
 
 // Native AI Chat Panel (AuxiliaryBar view)
 import './contrib/aiChat/browser/aiChat.contribution.js';

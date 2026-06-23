@@ -1,36 +1,72 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepsAway Team. All rights reserved.
- *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { $, append } from '../../../../../base/browser/dom.js';
+import { Codicon } from '../../../../../base/common/codicons.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
+import { ThemeIcon } from '../../../../../base/common/themables.js';
 import { localize } from '../../../../../nls.js';
 import { ChatMessage, ChatMessagePart } from '../../../../../ai/chat/chatModels.js';
-import { ToolCallCard } from './toolCallCard.js';
 
 /**
- * Renders a single ChatMessage as a DOM element using VS Code's native theming.
+ * Cursor-style message renderer: user bubbles, agent activity log, follow-up text.
  */
 export class ChatMessageRenderer extends Disposable {
 
 	render(message: ChatMessage): HTMLElement {
-		const container = $('div.fewstepsaway-chat-message');
-		container.classList.add(`role-${message.role}`);
+		if (message.role === 'user') {
+			return this.renderUserMessage(message);
+		}
+		return this.renderAssistantMessage(message);
+	}
 
-		const roleLabel = append(container, $('div.fewstepsaway-chat-message-role'));
-		roleLabel.textContent = message.role === 'user'
-			? localize('fewstepsaway.chat.role.you', "You")
-			: localize('fewstepsaway.chat.role.assistant', "Assistant");
-
-		const content = append(container, $('div.fewstepsaway-chat-message-content'));
-
+	private renderUserMessage(message: ChatMessage): HTMLElement {
+		const container = $('div.fewstepsaway-chat-message.role-user');
+		const bubble = append(container, $('div.fewstepsaway-chat-user-bubble'));
 		for (const part of message.parts) {
-			this.renderPart(content, part);
+			if (part.kind === 'text') {
+				bubble.textContent = part.text;
+			}
+		}
+		return container;
+	}
+
+	private renderAssistantMessage(message: ChatMessage): HTMLElement {
+		const container = $('div.fewstepsaway-chat-message.role-assistant');
+
+		const reasoning = message.parts.find(p => p.kind === 'text' && p.id === '__reasoning__') as { text: string } | undefined;
+		const toolParts = message.parts.filter(p => p.kind === 'tool-call' || p.kind === 'tool-result');
+		const textParts = message.parts.filter(p => p.kind === 'text' && p.id !== '__reasoning__');
+		const errors = message.parts.filter(p => p.kind === 'error');
+
+		if (reasoning) {
+			const thought = append(container, $('div.fewstepsaway-chat-thought'));
+			thought.textContent = reasoning.text;
+		}
+
+		if (toolParts.length > 0 || message.isStreaming) {
+			const activity = append(container, $('div.fewstepsaway-chat-activity'));
+			this.renderActivityLog(activity, message.parts, message.isStreaming);
+		}
+
+		for (const part of textParts) {
+			if (part.kind === 'text' && part.text.trim()) {
+				const content = append(container, $('div.fewstepsaway-chat-assistant-text'));
+				this.renderText(content, part.text);
+			}
+		}
+
+		for (const part of errors) {
+			if (part.kind === 'error') {
+				const errorEl = append(container, $('div.fewstepsaway-chat-message-error'));
+				errorEl.textContent = part.message;
+			}
 		}
 
 		if (message.isStreaming) {
-			append(content, $('span.fewstepsaway-chat-streaming-indicator'));
+			append(container, $('span.fewstepsaway-chat-streaming-indicator'));
 		}
 
 		if (message.error) {
@@ -41,28 +77,50 @@ export class ChatMessageRenderer extends Disposable {
 		return container;
 	}
 
-	private renderPart(container: HTMLElement, part: ChatMessagePart): void {
-		switch (part.kind) {
-			case 'text':
-				this.renderText(container, part.text);
-				break;
-			case 'tool-call':
-				new ToolCallCard(container, part.tool, part.input, part.state, part.title);
-				break;
-			case 'tool-result':
-				this.renderToolResult(container, part);
-				break;
-			case 'diff':
-				this.renderDiff(container, part);
-				break;
-			case 'step-start':
-				append(container, $('hr.fewstepsaway-chat-step-separator'));
-				break;
-			case 'step-finish':
-				break;
-			case 'error':
-				this.renderError(container, part.message);
-				break;
+	private renderActivityLog(container: HTMLElement, parts: ChatMessagePart[], isStreaming: boolean): void {
+		const list = append(container, $('ul.fewstepsaway-chat-activity-list'));
+
+		for (const part of parts) {
+			if (part.kind === 'tool-call') {
+				const item = append(list, $('li.fewstepsaway-chat-activity-item'));
+				const dot = append(item, $('span.fewstepsaway-chat-activity-dot'));
+				dot.classList.add(...ThemeIcon.asClassNameArray(Codicon.circleFilled));
+
+				const body = append(item, $('div.fewstepsaway-chat-activity-body'));
+				const titleRow = append(body, $('div.fewstepsaway-chat-activity-title-row'));
+				append(titleRow, $('span.fewstepsaway-chat-activity-title')).textContent = part.title ?? part.tool;
+
+				const badge = append(titleRow, $('span.fewstepsaway-chat-activity-badge'));
+				badge.textContent = part.state === 'completed'
+					? localize('fewstepsaway.activity.completed', "Completed")
+					: localize('fewstepsaway.activity.running', "Running");
+
+				if (part.input && typeof part.input === 'object') {
+					const detail = this.describeToolInput(part.tool, part.input as Record<string, unknown>);
+					if (detail) {
+						append(body, $('div.fewstepsaway-chat-activity-detail')).textContent = detail;
+					}
+				}
+			}
+		}
+
+		if (isStreaming) {
+			const footer = append(container, $('div.fewstepsaway-chat-activity-footer'));
+			const filesToggle = append(footer, $('button.fewstepsaway-chat-files-toggle'));
+			const toolCount = parts.filter(p => p.kind === 'tool-call').length;
+			filesToggle.textContent = localize('fewstepsaway.activity.files', "> {0} Actions", toolCount || '…');
+		}
+	}
+
+	private describeToolInput(tool: string, input: Record<string, unknown>): string {
+		switch (tool) {
+			case 'read': return localize('fewstepsaway.activity.read', "Read {0}", String(input.path ?? input.file ?? ''));
+			case 'write': return localize('fewstepsaway.activity.write', "Write {0}", String(input.path ?? ''));
+			case 'edit': return localize('fewstepsaway.activity.edit', "Edit {0}", String(input.path ?? ''));
+			case 'glob': return localize('fewstepsaway.activity.glob', "Glob {0}", String(input.pattern ?? ''));
+			case 'grep': return localize('fewstepsaway.activity.grep', "Grep {0}", String(input.pattern ?? ''));
+			case 'bash': return localize('fewstepsaway.activity.bash', "Ran {0}", String(input.command ?? 'command').slice(0, 80));
+			default: return '';
 		}
 	}
 
@@ -76,94 +134,13 @@ export class ChatMessageRenderer extends Disposable {
 				const code = firstNewline >= 0 ? block.slice(firstNewline + 1) : block;
 				const pre = append(container, $('pre'));
 				const codeEl = append(pre, $('code'));
-				if (lang) {
-					codeEl.classList.add(`language-${lang}`);
-				}
+				if (lang) { codeEl.classList.add(`language-${lang}`); }
 				codeEl.textContent = code.replace(/\n$/, '');
 			} else if (block.trim()) {
-				const paragraphs = block.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
-				for (const para of paragraphs) {
-					const p = append(container, $('p'));
-					this.appendInline(p, para);
+				for (const para of block.split(/\n\n+/).map(p => p.trim()).filter(Boolean)) {
+					append(container, $('p')).textContent = para;
 				}
 			}
 		}
-	}
-
-	private appendInline(parent: HTMLElement, text: string): void {
-		let i = 0;
-		while (i < text.length) {
-			if (text[i] === '`') {
-				const end = text.indexOf('`', i + 1);
-				if (end > i) {
-					append(parent, $('code')).textContent = text.slice(i + 1, end);
-					i = end + 1;
-					continue;
-				}
-			}
-
-			if (text.startsWith('**', i)) {
-				const end = text.indexOf('**', i + 2);
-				if (end > i + 2) {
-					append(parent, $('strong')).textContent = text.slice(i + 2, end);
-					i = end + 2;
-					continue;
-				}
-			}
-
-			if (text[i] === '*' && text[i + 1] !== '*') {
-				const end = text.indexOf('*', i + 1);
-				if (end > i + 1 && (end + 1 >= text.length || text[end + 1] !== '*')) {
-					append(parent, $('em')).textContent = text.slice(i + 1, end);
-					i = end + 1;
-					continue;
-				}
-			}
-
-			const nextSpecial = text.slice(i).search(/[`*]/);
-			const length = nextSpecial === -1 ? text.length - i : nextSpecial;
-			if (length > 0) {
-				parent.appendChild(document.createTextNode(text.slice(i, i + length)));
-				i += length;
-			} else {
-				parent.appendChild(document.createTextNode(text[i]));
-				i++;
-			}
-		}
-	}
-
-	private renderToolResult(container: HTMLElement, part: { id: string; tool: string; output?: unknown; error?: string; title?: string }): void {
-		const card = append(container, $('div.fewstepsaway-chat-tool-result'));
-		const header = append(card, $('div.fewstepsaway-chat-tool-result-header'));
-		header.textContent = part.error ? '✗ Error' : '✓ Result';
-
-		if (part.error) {
-			const errEl = append(card, $('div.fewstepsaway-chat-tool-result-error'));
-			errEl.textContent = part.error;
-		} else if (part.output !== undefined) {
-			const outEl = append(card, $('div.fewstepsaway-chat-tool-result-output'));
-			const pre = append(outEl, $('pre'));
-			const code = append(pre, $('code'));
-			try {
-				const out = typeof part.output === 'string' ? part.output : JSON.stringify(part.output, null, 2);
-				code.textContent = out;
-			} catch {
-				code.textContent = String(part.output);
-			}
-		}
-	}
-
-	private renderDiff(container: HTMLElement, part: { id: string; path: string; patch: string }): void {
-		const diffEl = append(container, $('div.fewstepsaway-chat-diff'));
-		const header = append(diffEl, $('div.fewstepsaway-chat-diff-header'));
-		header.textContent = part.path;
-		const pre = append(diffEl, $('pre'));
-		const code = append(pre, $('code'));
-		code.textContent = part.patch;
-	}
-
-	private renderError(container: HTMLElement, message: string): void {
-		const errorEl = append(container, $('div.fewstepsaway-chat-message-error'));
-		errorEl.textContent = message;
 	}
 }

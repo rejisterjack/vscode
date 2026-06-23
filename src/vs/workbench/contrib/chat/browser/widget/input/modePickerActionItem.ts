@@ -33,6 +33,8 @@ import { getOpenChatActionIdForMode } from '../../actions/chatActions.js';
 import { IToggleChatModeArgs, ToggleAgentModeActionId } from '../../actions/chatExecuteActions.js';
 import { ChatInputPickerActionViewItem, IChatInputPickerOptions } from './chatInputPickerActionItem.js';
 import { IOpenerService } from '../../../../../../platform/opener/common/opener.js';
+import { AI_CHAT_HIDE_BUILTIN_MODES_KEY, getFewStepsAwayModeIcon, getFewStepsAwayModeSortIndex, isFewStepsAwayModeId } from '../../../../../../ai/mode/modeIcons.js';
+import { getFewStepsAwayModeId } from '../../aiChat/browser/fewStepsAwayModeUtils.js';
 
 export interface IModePickerDelegate {
 	readonly currentMode: IObservable<IChatMode>;
@@ -53,6 +55,43 @@ const builtinDefaultIcon = (mode: IChatMode) => {
 	}
 };
 
+function fewStepsAwayModeIcon(mode: IChatMode): ThemeIcon | undefined {
+	const modeId = getFewStepsAwayModeId(mode);
+	return modeId ? getFewStepsAwayModeIcon(modeId) : undefined;
+}
+
+function resolveModeIcon(mode: IChatMode, productService: IProductService): ThemeIcon | undefined {
+	return mode.icon.get()
+		?? fewStepsAwayModeIcon(mode)
+		?? (isModeConsideredBuiltIn(mode, productService) ? builtinDefaultIcon(mode) : undefined);
+}
+
+function sortCustomModes(modes: IChatMode[] | undefined, hideBuiltinModes: boolean): IChatMode[] {
+	if (!modes?.length) {
+		return [];
+	}
+	const sorted = [...modes];
+	if (hideBuiltinModes) {
+		sorted.sort((a, b) => {
+			const aId = getFewStepsAwayModeId(a);
+			const bId = getFewStepsAwayModeId(b);
+			if (aId && bId) {
+				return getFewStepsAwayModeSortIndex(aId) - getFewStepsAwayModeSortIndex(bId);
+			}
+			if (aId) {
+				return -1;
+			}
+			if (bId) {
+				return 1;
+			}
+			return a.label.get().localeCompare(b.label.get());
+		});
+	} else {
+		sorted.sort((a, b) => a.label.get().localeCompare(b.label.get()));
+	}
+	return sorted;
+}
+
 export class ModePickerActionItem extends ChatInputPickerActionViewItem {
 	constructor(
 		action: MenuItemAction,
@@ -61,7 +100,7 @@ export class ModePickerActionItem extends ChatInputPickerActionViewItem {
 		@IActionWidgetService actionWidgetService: IActionWidgetService,
 		@IChatAgentService chatAgentService: IChatAgentService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IContextKeyService private readonly contextKeyService: IContextKeyService,
 		@IChatModeService chatModeService: IChatModeService,
 		@IMenuService private readonly menuService: IMenuService,
@@ -171,7 +210,7 @@ export class ModePickerActionItem extends ChatInputPickerActionViewItem {
 				...makeAction(mode, currentMode),
 				tooltip: '',
 				hover: { content: mode.description.get() ?? chatAgentService.getDefaultAgent(ChatAgentLocation.Chat, mode.kind)?.description ?? action.tooltip, position: this.pickerOptions.hoverPosition },
-				icon: mode.icon.get() ?? (isModeConsideredBuiltIn(mode, this._productService) ? builtinDefaultIcon(mode) : undefined),
+				icon: resolveModeIcon(mode, this._productService),
 				category: agentModeDisabledViaPolicy ? policyDisabledCategory : customCategory
 			};
 		};
@@ -205,9 +244,11 @@ export class ModePickerActionItem extends ChatInputPickerActionViewItem {
 			getActions: () => {
 				const modes = chatModeService.getModes();
 				const currentMode = delegate.currentMode.get();
-				const agentMode = modes.builtin.find(mode => mode.id === ChatMode.Agent.id);
+				const hideBuiltinModes = configurationService.getValue<boolean>(AI_CHAT_HIDE_BUILTIN_MODES_KEY) ?? false;
+				const agentMode = !hideBuiltinModes ? modes.builtin.find(mode => mode.id === ChatMode.Agent.id) : undefined;
 
-				const shouldHideEditMode = configurationService.getValue<boolean>(ChatConfiguration.EditModeHidden) && chatAgentService.hasToolsAgent && currentMode.id !== ChatMode.Edit.id;
+				const shouldHideEditMode = (configurationService.getValue<boolean>(ChatConfiguration.EditModeHidden) && chatAgentService.hasToolsAgent && currentMode.id !== ChatMode.Edit.id)
+					|| (hideBuiltinModes && currentMode.id !== ChatMode.Edit.id);
 
 				const otherBuiltinModes = modes.builtin.filter(mode => {
 					if (mode.id === ChatMode.Agent.id) {
@@ -226,15 +267,15 @@ export class ModePickerActionItem extends ChatInputPickerActionViewItem {
 					modes.custom,
 					mode => isModeConsideredBuiltIn(mode, this._productService) ? 'builtin' : 'custom');
 
-				const customBuiltinModeActions = customModes.builtin?.map(mode => {
-					const action = makeActionFromCustomMode(mode, currentMode);
-					action.category = agentModeDisabledViaPolicy ? policyDisabledCategory : builtInCategory;
-					return action;
-				}) ?? [];
-				customBuiltinModeActions.sort((a, b) => a.label.localeCompare(b.label));
+				const customBuiltinModeActions = sortCustomModes(customModes.builtin, hideBuiltinModes)
+					.map(mode => {
+						const action = makeActionFromCustomMode(mode, currentMode);
+						action.category = agentModeDisabledViaPolicy ? policyDisabledCategory : builtInCategory;
+						return action;
+					});
 
-				const customModeActions = customModes.custom?.map(mode => makeActionFromCustomMode(mode, currentMode)) ?? [];
-				customModeActions.sort((a, b) => a.label.localeCompare(b.label));
+				const customModeActions = sortCustomModes(customModes.custom, hideBuiltinModes)
+					.map(mode => makeActionFromCustomMode(mode, currentMode));
 
 				const orderedModes = coalesce([
 					agentMode && makeAction(agentMode, currentMode),
@@ -278,14 +319,10 @@ export class ModePickerActionItem extends ChatInputPickerActionViewItem {
 		this.setAriaLabelAttributes(element);
 
 		const currentMode = this.delegate.currentMode.get();
-		const isDefault = currentMode.id === ChatMode.Agent.id;
+		const hideBuiltinModes = this.configurationService.getValue<boolean>(AI_CHAT_HIDE_BUILTIN_MODES_KEY) ?? false;
+		const isDefault = !hideBuiltinModes && currentMode.id === ChatMode.Agent.id;
 		const state = currentMode.label.get();
-		let icon = currentMode.icon.get();
-
-		// Every built-in mode should have an icon. // TODO: this should be provided by the mode itself
-		if (!icon && isModeConsideredBuiltIn(currentMode, this._productService)) {
-			icon = builtinDefaultIcon(currentMode);
-		}
+		const icon = resolveModeIcon(currentMode, this._productService);
 
 		const labelElements = [];
 		if (icon) {

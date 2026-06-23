@@ -21,7 +21,12 @@ import { mainWindow } from '../../../../../base/browser/window.js';
 import { disposableWindowInterval } from '../../../../../base/browser/dom.js';
 import { isNewUser } from './chatStatus.js';
 import product from '../../../../../platform/product/common/product.js';
+import { IFewStepsAwayAuthService } from '../../../../../ai/auth/fewStepsAwayAuthService.js';
+import { FEWSTEPSAWAY_SIGN_IN_COMMAND_ID } from '../../../../../ai/mode/modeIcons.js';
 import { isCompletionsEnabled } from '../../../../../editor/common/services/completionsEnablement.js';
+
+/** FewStepsAway status bar icon -- avoids Copilot branding in this fork. */
+const FEWSTEPSAWAY_STATUS_ICON = 'comment-discussion';
 
 export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribution {
 
@@ -41,6 +46,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IInlineCompletionsService private readonly completionsService: IInlineCompletionsService,
 		@IChatSessionsService private readonly chatSessionsService: IChatSessionsService,
+		@IFewStepsAwayAuthService private readonly authService: IFewStepsAwayAuthService,
 	) {
 		super();
 
@@ -70,6 +76,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
 		this._register(this.chatEntitlementService.onDidChangeQuotaExceeded(() => this.update()));
 		this._register(this.chatEntitlementService.onDidChangeSentiment(() => this.update()));
 		this._register(this.chatEntitlementService.onDidChangeEntitlement(() => this.update()));
+		this._register(this.authService.onDidChangeAuthState(() => this.update()));
 
 		this._register(this.completionsService.onDidChangeIsSnoozing(() => this.update()));
 
@@ -105,11 +112,18 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
 	}
 
 	private getEntryProps(): IStatusbarEntry {
-		let text = '$(copilot)';
-		let ariaLabel = localize('chatStatusAria', "Copilot status");
+		let text = `$(${FEWSTEPSAWAY_STATUS_ICON}) FewStepsAway`;
+		let ariaLabel = localize('chatStatusAria', "FewStepsAway status");
 		let kind: StatusbarEntryKind | undefined;
+		let command: string | typeof ShowTooltipCommand = ShowTooltipCommand;
 
-		if (isNewUser(this.chatEntitlementService)) {
+		if (!this.authService.isSignedIn()) {
+			const signInLabel = localize('fewstepsaway.signInStatus', "Sign in");
+			text = `$(${FEWSTEPSAWAY_STATUS_ICON}) ${signInLabel}`;
+			ariaLabel = signInLabel;
+			kind = 'prominent';
+			command = FEWSTEPSAWAY_SIGN_IN_COMMAND_ID;
+		} else if (isNewUser(this.chatEntitlementService)) {
 			const entitlement = this.chatEntitlementService.entitlement;
 
 			// Finish Setup
@@ -121,7 +135,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
 			) {
 				const finishSetup = localize('finishSetup', "Finish Setup");
 
-				text = `$(copilot) ${finishSetup}`;
+				text = `$(${FEWSTEPSAWAY_STATUS_ICON}) ${finishSetup}`;
 				ariaLabel = finishSetup;
 				kind = 'prominent';
 			}
@@ -131,13 +145,13 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
 
 			// Disabled
 			if (this.chatEntitlementService.sentiment.disabled || this.chatEntitlementService.sentiment.untrusted) {
-				text = '$(copilot-unavailable)';
-				ariaLabel = localize('copilotDisabledStatus', "Copilot disabled");
+				text = '$(circle-slash) FewStepsAway';
+				ariaLabel = localize('fewStepsAwayDisabledStatus', "FewStepsAway disabled");
 			}
 
 			// Sessions in progress
 			else if (this.runningSessionsCount > 0) {
-				text = '$(copilot-in-progress)';
+				text = '$(sync~spin) FewStepsAway';
 				if (this.runningSessionsCount > 1) {
 					ariaLabel = localize('chatSessionsInProgressStatus', "{0} agent sessions in progress", this.runningSessionsCount);
 				} else {
@@ -149,7 +163,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
 			else if (this.chatEntitlementService.entitlement === ChatEntitlement.Unknown) {
 				const signedOutWarning = localize('notSignedIn', "Signed out");
 
-				text = `${this.chatEntitlementService.anonymous ? '$(copilot)' : '$(copilot-not-connected)'} ${signedOutWarning}`;
+				text = `$(${FEWSTEPSAWAY_STATUS_ICON}) ${signedOutWarning}`;
 				ariaLabel = signedOutWarning;
 				kind = 'prominent';
 			}
@@ -165,29 +179,29 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
 					quotaWarning = localize('chatAndCompletionsQuotaExceededStatus', "Quota reached");
 				}
 
-				text = `$(copilot-warning) ${quotaWarning}`;
+				text = `$(warning) ${quotaWarning}`;
 				ariaLabel = quotaWarning;
 				kind = 'prominent';
 			}
 
 			// Completions Disabled
 			else if (this.editorService.activeTextEditorLanguageId && !isCompletionsEnabled(this.configurationService, this.editorService.activeTextEditorLanguageId)) {
-				text = '$(copilot-unavailable)';
+				text = '$(circle-slash) FewStepsAway';
 				ariaLabel = localize('completionsDisabledStatus', "Inline suggestions disabled");
 			}
 
 			// Completions Snoozed
 			else if (this.completionsService.isSnoozing()) {
-				text = '$(copilot-snooze)';
+				text = '$(bell-slash) FewStepsAway';
 				ariaLabel = localize('completionsSnoozedStatus', "Inline suggestions snoozed");
 			}
 		}
 
 		const baseResult = {
-			name: localize('chatStatus', "Copilot Status"),
+			name: localize('chatStatus', "FewStepsAway Status"),
 			text,
 			ariaLabel,
-			command: ShowTooltipCommand,
+			command,
 			showInAllWindows: true,
 			kind,
 			tooltip: {

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) FewStepsAway Team. All rights reserved.
- *  Licensed under the Apache License, Version 2.0. See LICENSE.txt for more information.
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Position } from '../../../editor/common/core/position.js';
@@ -11,9 +11,15 @@ import { Range } from '../../../editor/common/core/range.js';
  */
 
 /**
- * AI operating modes
+ * AI operating modes. Extended to cover the full Kilocode agent taxonomy:
+ *  - `code`: full tool access (default coding agent)
+ *  - `ask`: read-only Q&A (no edits)
+ *  - `architect`: system design & planning (no edits)
+ *  - `debug`: systematic debugging (full tool access)
+ *  - `plan`: plan-mode (edits restricted to plan files)
+ *  - `learning`: teaching/explanation mode (legacy)
  */
-export type AIMode = 'coding' | 'architect' | 'debug' | 'learning';
+export type AIMode = 'coding' | 'ask' | 'architect' | 'debug' | 'plan' | 'learning';
 
 /**
  * AI request context containing all necessary information for an AI request

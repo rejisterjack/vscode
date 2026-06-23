@@ -97,6 +97,9 @@ import { IChatAgentService } from '../../../common/participants/chatAgents.js';
 import { ILanguageModelToolsService } from '../../../common/tools/languageModelToolsService.js';
 import { ChatHistoryNavigator } from '../../../common/widget/chatWidgetHistoryService.js';
 import { ChatSessionPrimaryPickerAction, ChatSubmitAction, IChatExecuteActionContext, OpenDelegationPickerAction, OpenModelPickerAction, OpenModePickerAction, OpenSessionTargetPickerAction, OpenWorkspacePickerAction } from '../../actions/chatExecuteActions.js';
+import { AI_CHAT_HIDE_BUILTIN_MODES_KEY } from '../../../../../../ai/mode/modeIcons.js';
+import { IAIService, IProviderRegistry } from '../../../../../../ai/common/types/provider.types.js';
+import { createProviderPickerDelegate, IProviderPickerDelegate, OpenProviderPickerAction, ProviderPickerActionItem } from '../../../../aiChat/browser/fewStepsAwayProviderPicker.js';
 import { AgentSessionProviders, getAgentSessionProvider } from '../../agentSessions/agentSessions.js';
 import { IAgentSessionsService } from '../../agentSessions/agentSessionsService.js';
 import { ChatAttachmentModel } from '../../attachments/chatAttachmentModel.js';
@@ -354,6 +357,8 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 	private agentSessionTypeKey: IContextKey<string>;
 	private chatSessionHasCustomAgentTarget: IContextKey<boolean>;
 	private modelWidget: ModelPickerActionItem | undefined;
+	private providerWidget: ProviderPickerActionItem | undefined;
+	private providerPickerDelegate: IProviderPickerDelegate | undefined;
 	private modeWidget: ModePickerActionItem | undefined;
 	private sessionTargetWidget: SessionTypePickerActionItem | undefined;
 	private delegationWidget: DelegationSessionPickerActionItem | undefined;
@@ -757,7 +762,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 
 	public switchToNextModel(): void {
-		const models = this.getModels();
+		const models = this.getModelsForPicker();
 		if (models.length > 0) {
 			const currentIndex = models.findIndex(model => model.identifier === this._currentLanguageModel.get()?.identifier);
 			const nextIndex = (currentIndex + 1) % models.length;
@@ -767,6 +772,10 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 	public openModelPicker(): void {
 		this.modelWidget?.show();
+	}
+
+	public openProviderPicker(): void {
+		this.providerWidget?.show();
 	}
 
 	public openModePicker(): void {
@@ -1052,8 +1061,49 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		return models.filter(entry => entry.metadata?.isUserSelectable && this.modelSupportedForDefaultAgent(entry) && this.modelSupportedForInlineChat(entry));
 	}
 
+	private usesFewStepsAwayNativeProviders(): boolean {
+		return this.configurationService.getValue<boolean>(AI_CHAT_HIDE_BUILTIN_MODES_KEY) ?? false;
+	}
+
+	private getModelsForPicker(): ILanguageModelChatMetadataAndIdentifier[] {
+		const models = this.getModels();
+		if (!this.usesFewStepsAwayNativeProviders()) {
+			return models;
+		}
+		const providerId = this.configurationService.getValue<string>('ai.provider.default') ?? 'openai';
+		return models.filter(m => m.metadata.vendor === providerId);
+	}
+
+	private ensureProviderPickerDelegate(): IProviderPickerDelegate {
+		if (!this.providerPickerDelegate) {
+			const providerRegistry = this.instantiationService.invokeFunction(accessor => {
+				accessor.get(IAIService);
+				return accessor.get(IProviderRegistry);
+			});
+			this.providerPickerDelegate = createProviderPickerDelegate(
+				providerRegistry,
+				this.configurationService,
+				this.languageModelsService,
+				() => this.onFewStepsAwayProviderChanged(),
+			);
+		}
+		return this.providerPickerDelegate;
+	}
+
+	private onFewStepsAwayProviderChanged(): void {
+		const models = this.getModelsForPicker();
+		const current = this._currentLanguageModel.get();
+		const providerId = this.configurationService.getValue<string>('ai.provider.default') ?? 'openai';
+		if (!current || current.metadata.vendor !== providerId) {
+			const defaultModel = models.find(m => m.metadata.isDefaultForLocation[this.location]) ?? models[0];
+			if (defaultModel) {
+				this.setCurrentLanguageModel(defaultModel);
+			}
+		}
+	}
+
 	private setCurrentLanguageModelToDefault() {
-		const allModels = this.getModels();
+		const allModels = this.getModelsForPicker();
 		const defaultModel = allModels.find(m => m.metadata.isDefaultForLocation[this.location]) || allModels.find(m => m.metadata.isUserSelectable);
 		if (defaultModel) {
 			this.setCurrentLanguageModel(defaultModel);
@@ -2002,7 +2052,10 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 				actionMinWidth: 40
 			},
 			actionViewItemProvider: (action, options) => {
-				if (action.id === OpenModelPickerAction.ID && action instanceof MenuItemAction) {
+				if (action.id === OpenProviderPickerAction.ID && action instanceof MenuItemAction && this.usesFewStepsAwayNativeProviders()) {
+					const delegate = this.ensureProviderPickerDelegate();
+					return this.providerWidget = this.instantiationService.createInstance(ProviderPickerActionItem, action, delegate, pickerOptions);
+				} else if (action.id === OpenModelPickerAction.ID && action instanceof MenuItemAction) {
 					if (!this._currentLanguageModel) {
 						this.setCurrentLanguageModelToDefault();
 					}
@@ -2014,7 +2067,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 							this.setCurrentLanguageModel(model);
 							this.renderAttachedContext();
 						},
-						getModels: () => this.getModels()
+						getModels: () => this.getModelsForPicker()
 					};
 					return this.modelWidget = this.instantiationService.createInstance(ModelPickerActionItem, action, undefined, itemDelegate, pickerOptions);
 				} else if (action.id === OpenModePickerAction.ID && action instanceof MenuItemAction) {

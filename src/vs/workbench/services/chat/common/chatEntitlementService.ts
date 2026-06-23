@@ -995,6 +995,8 @@ export class ChatEntitlementContext extends Disposable {
 
 	private static readonly CHAT_DISABLED_CONFIGURATION_KEY = 'chat.disableAIFeatures';
 
+	private static readonly FEWSTEPSAWAY_HIDE_BUILTIN_MODES_KEY = 'ai.chat.hideBuiltinModes';
+
 	private readonly canSignUpContextKey: IContextKey<boolean>;
 	private readonly signedOutContextKey: IContextKey<boolean>;
 
@@ -1062,7 +1064,8 @@ export class ChatEntitlementContext extends Disposable {
 
 	private registerListeners(): void {
 		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(ChatEntitlementContext.CHAT_DISABLED_CONFIGURATION_KEY)) {
+			if (e.affectsConfiguration(ChatEntitlementContext.CHAT_DISABLED_CONFIGURATION_KEY)
+				|| e.affectsConfiguration(ChatEntitlementContext.FEWSTEPSAWAY_HIDE_BUILTIN_MODES_KEY)) {
 				this.updateContext();
 			}
 		}));

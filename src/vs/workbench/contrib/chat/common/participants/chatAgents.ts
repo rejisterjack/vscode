@@ -336,7 +336,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 				if (!agent.isCore) {
 					extensionAgentRegistered = true;
 				}
-				if (agent.id === 'chat.setup' || agent.id === 'github.copilot.editsAgent') {
+				if (agent.id === 'chat.setup' || agent.id === 'github.copilot.editsAgent' || agent.id === 'fewstepsaway.agent') {
 					// TODO@roblourens firing the event below probably isn't necessary but leave it alone for now
 					toolsAgentRegistered = true;
 				} else {
@@ -433,6 +433,19 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 	}
 
 	private _preferExtensionAgent<T extends IChatAgentData>(agents: T[]): T | undefined {
+		const isSignedIn = this.contextKeyService.getContextKeyValue<boolean>('fewstepsaway.signedIn') === true;
+		if (isSignedIn) {
+			const fewStepsAwayAgent = findLast(agents, agent => agent.id.startsWith('fewstepsaway.') && agent.id !== 'fewstepsaway.setup');
+			if (fewStepsAwayAgent) {
+				return fewStepsAwayAgent;
+			}
+		} else {
+			const setupAgent = agents.find(agent => agent.id === 'fewstepsaway.setup');
+			if (setupAgent) {
+				return setupAgent;
+			}
+		}
+
 		// We potentially have multiple agents on the same location,
 		// contributed from core and from extensions.
 		// This method will prefer the last extensions provided agent
