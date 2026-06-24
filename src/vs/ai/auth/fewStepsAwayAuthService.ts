@@ -22,6 +22,14 @@ export const IFewStepsAwayAuthService = createDecorator<IFewStepsAwayAuthService
 const SECRET_ACCESS_TOKEN = 'fewstepsaway.auth.accessToken';
 const SECRET_REFRESH_TOKEN = 'fewstepsaway.auth.refreshToken';
 const SECRET_USER = 'fewstepsaway.auth.user';
+const SECRET_PENDING_OAUTH = 'fewstepsaway.auth.pendingOAuth';
+
+interface PendingOAuth {
+	readonly codeVerifier: string;
+	readonly state: string;
+	readonly redirectUri: string;
+	readonly clientId: string;
+}
 
 export interface IFewStepsAwayAuthService {
 	readonly _serviceBrand: undefined;
@@ -32,7 +40,6 @@ export interface IFewStepsAwayAuthService {
 	getAccessToken(): Promise<string | undefined>;
 	initialize(): Promise<void>;
 	signInWithOAuth(): Promise<void>;
-	completeMfa(mfaChallengeToken: string, code: string): Promise<void>;
 	handleOAuthCallback(url: string): Promise<boolean>;
 	signOut(): Promise<void>;
 	refreshIfNeeded(): Promise<boolean>;
@@ -49,9 +56,10 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 
 	private apiClient: FewStepsAwayApiClient | undefined;
 	private session: FewStepsAwayAuthSession | undefined;
-	private pendingOAuth: { codeVerifier: string; state: string; redirectUri: string; clientId: string } | undefined;
+	private pendingOAuth: PendingOAuth | undefined;
 	private refreshPromise: Promise<boolean> | undefined;
 	private initialized = false;
+	private nativeRequestService: IRequestService | undefined;
 
 	constructor(
 		@IConfigurationService private readonly configurationService: IConfigurationService,
@@ -71,7 +79,9 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 			return;
 		}
 		this.initialized = true;
-		this.apiClient = new FewStepsAwayApiClient(this.requestService, this.getApiBaseUrl());
+		this.apiClient = new FewStepsAwayApiClient(this.getRequestService(), this.getApiBaseUrl());
+
+		await this.restorePendingOAuth();
 
 		try {
 			const accessToken = await this.secretStorageService.get(SECRET_ACCESS_TOKEN);
@@ -110,6 +120,12 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 		return !!this.pendingOAuth;
 	}
 
+	/** Desktop: route API calls through shared process (renderer CSP blocks http://localhost). */
+	useNativeRequest(requestService: IRequestService): void {
+		this.nativeRequestService = requestService;
+		this.apiClient = undefined;
+	}
+
 	getUser(): FewStepsAwayUserProfile | undefined {
 		return this.session?.user;
 	}
@@ -130,6 +146,7 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 		const state = generateRandomString(32);
 
 		this.pendingOAuth = { codeVerifier, state, redirectUri, clientId };
+		await this.persistPendingOAuth();
 		this.updateContextKeys();
 
 		const authorizeUrl = new URL(`${this.getApiBaseUrl()}/auth/authorize`);
@@ -145,7 +162,10 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 
 	async handleOAuthCallback(url: string): Promise<boolean> {
 		if (!this.pendingOAuth) {
-			return false;
+			await this.restorePendingOAuth();
+		}
+		if (!this.pendingOAuth) {
+			throw new Error('No sign-in in progress. Start sign-in from the IDE again.');
 		}
 
 		let parsed: URL;
@@ -155,29 +175,24 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 			return false;
 		}
 
-		if (parsed.pathname !== '/auth/callback' && !parsed.href.includes('auth/callback')) {
+		const isCallback =
+			(parsed.hostname === 'auth' && parsed.pathname === '/callback') ||
+			parsed.pathname === '/auth/callback' ||
+			parsed.href.includes('auth/callback');
+		if (!isCallback) {
 			return false;
 		}
 
 		const error = parsed.searchParams.get('error');
 		if (error) {
-			this.pendingOAuth = undefined;
-			this.updateContextKeys();
+			await this.clearPendingOAuth();
 			throw new Error(error);
 		}
 
 		const returnedState = parsed.searchParams.get('state');
 		if (!returnedState || returnedState !== this.pendingOAuth.state) {
-			this.pendingOAuth = undefined;
-			this.updateContextKeys();
+			await this.clearPendingOAuth();
 			throw new Error('OAuth state mismatch. Please try signing in again.');
-		}
-
-		const mfaRequired = parsed.searchParams.get('mfa_required');
-		if (mfaRequired) {
-			this.pendingOAuth = undefined;
-			this.updateContextKeys();
-			throw new Error('MFA is required. Use the web app to complete sign-in for now.');
 		}
 
 		const code = parsed.searchParams.get('code');
@@ -186,10 +201,13 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 		}
 
 		const { codeVerifier, redirectUri, clientId } = this.pendingOAuth;
-		this.pendingOAuth = undefined;
-		this.updateContextKeys();
+		await this.clearPendingOAuth();
 
 		const tokenResponse = await this.getApiClient().exchangeOAuthCode(code, codeVerifier, clientId, redirectUri);
+		if (tokenResponse.mfa_required || !tokenResponse.access_token) {
+			throw new Error('MFA is required. Complete sign-in in your browser, then try again from the IDE.');
+		}
+
 		const user = await this.getApiClient().getMe(tokenResponse.access_token);
 		await this.setSession({
 			accessToken: tokenResponse.access_token,
@@ -197,15 +215,6 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 			user,
 		});
 		return true;
-	}
-
-	async completeMfa(mfaChallengeToken: string, code: string): Promise<void> {
-		const result = await this.getApiClient().completeMfa(mfaChallengeToken, code);
-		await this.setSession({
-			accessToken: result.accessToken,
-			refreshToken: result.refreshToken,
-			user: result.user,
-		});
 	}
 
 	async signOut(): Promise<void> {
@@ -253,9 +262,13 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 		return url.replace(/\/$/, '');
 	}
 
+	private getRequestService(): IRequestService {
+		return this.nativeRequestService ?? this.requestService;
+	}
+
 	private getApiClient(): FewStepsAwayApiClient {
 		if (!this.apiClient) {
-			this.apiClient = new FewStepsAwayApiClient(this.requestService, this.getApiBaseUrl());
+			this.apiClient = new FewStepsAwayApiClient(this.getRequestService(), this.getApiBaseUrl());
 		}
 		return this.apiClient;
 	}
@@ -275,7 +288,7 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 
 	private async clearSession(): Promise<void> {
 		this.session = undefined;
-		this.pendingOAuth = undefined;
+		await this.clearPendingOAuth();
 		await this.secretStorageService.delete(SECRET_ACCESS_TOKEN);
 		await this.secretStorageService.delete(SECRET_REFRESH_TOKEN);
 		await this.secretStorageService.delete(SECRET_USER);
@@ -286,5 +299,31 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 	private updateContextKeys(): void {
 		this.signedInContext.set(this.isSignedIn());
 		this.authPendingContext.set(this.isAuthPending());
+	}
+
+	private async persistPendingOAuth(): Promise<void> {
+		if (this.pendingOAuth) {
+			await this.secretStorageService.set(SECRET_PENDING_OAUTH, JSON.stringify(this.pendingOAuth));
+		} else {
+			await this.secretStorageService.delete(SECRET_PENDING_OAUTH);
+		}
+	}
+
+	private async restorePendingOAuth(): Promise<void> {
+		const raw = await this.secretStorageService.get(SECRET_PENDING_OAUTH);
+		if (!raw) {
+			return;
+		}
+		try {
+			this.pendingOAuth = JSON.parse(raw) as PendingOAuth;
+		} catch {
+			await this.secretStorageService.delete(SECRET_PENDING_OAUTH);
+		}
+	}
+
+	private async clearPendingOAuth(): Promise<void> {
+		this.pendingOAuth = undefined;
+		await this.persistPendingOAuth();
+		this.updateContextKeys();
 	}
 }

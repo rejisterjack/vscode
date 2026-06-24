@@ -21,6 +21,8 @@ import { ILogService } from '../../../../../platform/log/common/log.js';
 import { INotificationService } from '../../../../../platform/notification/common/notification.js';
 import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
 import { ICommitMessageService } from '../../../../../ai/scm/commitMessageService.js';
+import { detectCommitConventions } from '../../../../../ai/scm/commitConventions.js';
+import { IFileService } from '../../../../../platform/files/common/files.js';
 import { ITextModelService } from '../../../../../editor/common/services/resolverService.js';
 import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../../common/contributions.js';
 import { ISCMRepository, ISCMResource, ISCMService } from '../../../scm/common/scm.js';
@@ -247,6 +249,7 @@ export class GenerateCommitMessageAction extends Action2 {
 		const scmService = accessor.get(ISCMService);
 		const commitMessageService = accessor.get(ICommitMessageService);
 		const textModelService = accessor.get(ITextModelService);
+		const fileService = accessor.get(IFileService);
 		const notificationService = accessor.get(INotificationService);
 		const logService = accessor.get(ILogService);
 
@@ -264,9 +267,15 @@ export class GenerateCommitMessageAction extends Action2 {
 
 		setGenerateCommitInProgress(true);
 		try {
-			const { diff, sourceLabel } = await buildStagedDiffSummary(repository, textModelService, cts.token);
+			// Detect project commit conventions (commitlint, git template,
+			// recent git-log style) in parallel with diff gathering so the
+			// generated message respects the project's husky / commitlint gate.
+			const [diffSummary, conventions] = await Promise.all([
+				buildStagedDiffSummary(repository, textModelService, cts.token),
+				detectCommitConventions(repository.provider.rootUri, fileService, cts.token),
+			]);
 
-			if (!diff.trim()) {
+			if (!diffSummary.diff.trim()) {
 				notificationService.info(localize(
 					'fewstepsaway.scm.generateCommitMessage.noChanges',
 					"No staged changes found. Stage your changes first, then click ✨ to generate a commit message.",
@@ -274,7 +283,7 @@ export class GenerateCommitMessageAction extends Action2 {
 				return;
 			}
 
-			const message = await commitMessageService.generateFromDiff(diff);
+			const message = await commitMessageService.generateFromDiff(diffSummary.diff, { conventions });
 			const next = message.trim();
 			if (!next) {
 				throw new Error(localize(
@@ -285,7 +294,7 @@ export class GenerateCommitMessageAction extends Action2 {
 
 			repository.input.setValue(next, false);
 			repository.input.setFocus();
-			logService.debug(`[GenerateCommitMessageAction] Generated commit message from ${sourceLabel}.`);
+			logService.debug(`[GenerateCommitMessageAction] Generated commit message from ${diffSummary.sourceLabel}.`);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
 			logService.error('[GenerateCommitMessageAction] Failed to generate commit message:', err);

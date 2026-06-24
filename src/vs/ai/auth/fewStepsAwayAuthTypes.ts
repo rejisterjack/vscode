@@ -18,19 +18,12 @@ export interface FewStepsAwayAuthSession {
 	readonly user: FewStepsAwayUserProfile;
 }
 
-export interface FewStepsAwayLoginResult {
-	readonly status: 'success' | 'mfa_required';
-	readonly accessToken?: string;
-	readonly refreshToken?: string;
-	readonly mfaChallengeToken?: string;
-	readonly user?: FewStepsAwayUserProfile;
-}
-
 export interface FewStepsAwayOAuthTokenResponse {
 	readonly access_token: string;
 	readonly refresh_token: string;
 	readonly token_type: string;
 	readonly expires_in: number;
+	readonly mfa_required?: boolean;
 }
 
 export interface FewStepsAwayRefreshResponse {

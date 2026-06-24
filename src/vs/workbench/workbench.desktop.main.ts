@@ -124,6 +124,9 @@ import './contrib/debug/electron-browser/extensionHostDebugService.js';
 // Extensions Management
 import './contrib/extensions/electron-browser/extensions.contribution.js';
 
+// FewStepsAway auth (native HTTP for localhost API)
+import './contrib/aiChat/electron-browser/fewStepsAwayAuthNativeRequest.contribution.js';
+
 // Issues
 import './contrib/issue/electron-browser/issue.contribution.js';
 
@@ -191,7 +194,7 @@ import './contrib/mcp/electron-browser/mcp.contribution.js';
 import './contrib/policyExport/electron-browser/policyExport.contribution.js';
 
 // AI (native: registers IAIServerManagerService that proxies to the main process)
-import '../ai/electron-sandbox/aiServerService.js';
+import './contrib/aiChat/electron-browser/aiServerService.contribution.js';
 
 //#endregion
 

@@ -48,6 +48,7 @@ import { LoggerChannelClient } from '../../../platform/log/common/logIpc.js';
 import product from '../../../platform/product/common/product.js';
 import { IProductService } from '../../../platform/product/common/productService.js';
 import { IRequestService } from '../../../platform/request/common/request.js';
+import { RequestChannel } from '../../../platform/request/common/requestIpc.js';
 import { ISharedProcessConfiguration } from '../../../platform/sharedProcess/node/sharedProcess.js';
 import { IStorageService } from '../../../platform/storage/common/storage.js';
 import { resolveCommonProperties } from '../../../platform/telemetry/common/commonProperties.js';
@@ -429,6 +430,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Checksum
 		const checksumChannel = ProxyChannel.fromService(accessor.get(IChecksumService), this._store);
 		this.server.registerChannel('checksum', checksumChannel);
+
+		// FewStepsAway auth API (workbench CSP blocks http://localhost from the renderer)
+		this.server.registerChannel('fewStepsAwayRequest', new RequestChannel(accessor.get(IRequestService)));
 
 		// Profiling
 		const profilingChannel = ProxyChannel.fromService(accessor.get(IV8InspectProfilingService), this._store);

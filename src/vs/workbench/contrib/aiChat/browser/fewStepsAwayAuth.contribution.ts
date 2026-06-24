@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { isNative } from '../../../../base/common/platform.js';
 import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
 import { IFewStepsAwayAuthService } from '../../../../ai/auth/fewStepsAwayAuthService.js';
 
@@ -13,7 +14,9 @@ export class FewStepsAwayAuthContribution implements IWorkbenchContribution {
 	constructor(
 		@IFewStepsAwayAuthService authService: IFewStepsAwayAuthService,
 	) {
-		void authService.initialize();
+		if (!isNative) {
+			void authService.initialize();
+		}
 	}
 }
 

@@ -7,7 +7,6 @@ import { IRequestService } from '../../platform/request/common/request.js';
 import { CancellationToken } from '../../base/common/cancellation.js';
 import { streamToBuffer } from '../../base/common/buffer.js';
 import {
-	FewStepsAwayLoginResult,
 	FewStepsAwayOAuthTokenResponse,
 	FewStepsAwayRefreshResponse,
 	FewStepsAwayUserProfile,
@@ -53,44 +52,55 @@ export class FewStepsAwayApiClient {
 		});
 	}
 
-	async login(email: string, password: string): Promise<FewStepsAwayLoginResult> {
-		return this.postJson<FewStepsAwayLoginResult>('/auth/login', { email, password });
-	}
+	private async postJson<T>(path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {
+		let response: Awaited<ReturnType<IRequestService['request']>>;
+		try {
+			response = await this.requestService.request({
+				type: 'POST',
+				url: `${this.baseUrl}${path}`,
+				headers: {
+					'Content-Type': 'application/json',
+					'Accept': 'application/json',
+					'X-Client-Platform': NATIVE_PLATFORM_HEADER,
+					...extraHeaders,
+				},
+				data: body ? JSON.stringify(body) : undefined,
+			}, CancellationToken.None);
+		} catch (error) {
+			throw this.toNetworkError(error);
+		}
 
-	async completeMfa(mfaChallengeToken: string, code: string): Promise<FewStepsAwayRefreshResponse> {
-		return this.postJson<FewStepsAwayRefreshResponse>('/auth/login/mfa', { code }, {
-			'Authorization': `Bearer ${mfaChallengeToken}`,
-		});
+		return this.parseJsonResponse<T>(response);
 	}
 
 	private async getJson<T>(path: string, accessToken: string): Promise<T> {
-		const response = await this.requestService.request({
-			type: 'GET',
-			url: `${this.baseUrl}${path}`,
-			headers: {
-				'Accept': 'application/json',
-				'X-Client-Platform': NATIVE_PLATFORM_HEADER,
-				'Authorization': `Bearer ${accessToken}`,
-			},
-		}, CancellationToken.None);
+		let response: Awaited<ReturnType<IRequestService['request']>>;
+		try {
+			response = await this.requestService.request({
+				type: 'GET',
+				url: `${this.baseUrl}${path}`,
+				headers: {
+					'Accept': 'application/json',
+					'X-Client-Platform': NATIVE_PLATFORM_HEADER,
+					'Authorization': `Bearer ${accessToken}`,
+				},
+			}, CancellationToken.None);
+		} catch (error) {
+			throw this.toNetworkError(error);
+		}
 
 		return this.parseJsonResponse<T>(response);
 	}
 
-	private async postJson<T>(path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {
-		const response = await this.requestService.request({
-			type: 'POST',
-			url: `${this.baseUrl}${path}`,
-			headers: {
-				'Content-Type': 'application/json',
-				'Accept': 'application/json',
-				'X-Client-Platform': NATIVE_PLATFORM_HEADER,
-				...extraHeaders,
-			},
-			data: body ? JSON.stringify(body) : undefined,
-		}, CancellationToken.None);
-
-		return this.parseJsonResponse<T>(response);
+	private toNetworkError(error: unknown): Error {
+		if (error instanceof Error) {
+			const message = error.message.toLowerCase();
+			if (message === 'failed to fetch' || message.includes('networkerror') || message.includes('econnrefused')) {
+				return new Error(`Cannot reach FewStepsAway API at ${this.baseUrl}. Ensure the backend is running.`);
+			}
+			return error;
+		}
+		return new Error(String(error));
 	}
 
 	private async parseJsonResponse<T>(response: Awaited<ReturnType<IRequestService['request']>>): Promise<T> {
@@ -99,14 +109,17 @@ export class FewStepsAwayApiClient {
 		if (response.res.statusCode && response.res.statusCode >= 400) {
 			let message = `Request failed (${response.res.statusCode})`;
 			try {
-				const body = JSON.parse(text) as { message?: string; error?: string };
-				message = body.message ?? body.error ?? message;
+				const body = JSON.parse(text) as { message?: string; error?: string; detail?: string };
+				message = body.detail ?? body.message ?? body.error ?? message;
 			} catch {
 				if (text) {
 					message = text;
 				}
 			}
 			throw new Error(message);
+		}
+		if (!text) {
+			throw new Error('Empty response from server');
 		}
 		return JSON.parse(text) as T;
 	}

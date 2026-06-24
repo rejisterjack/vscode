@@ -10,6 +10,7 @@ import { IProviderRegistry } from '../common/types/provider.types.js';
 import { IToolEnabledProvider } from '../provider/common/protocolBackedProvider.js';
 import { getSmallModel } from '../enhance/enhancePrompt.js';
 import { generateCommitMessage } from './generateCommitMessage.js';
+import { CommitConventions } from './commitConventions.js';
 
 /**
  * The commit-message generation service. Resolves a small/fast model
@@ -18,16 +19,23 @@ import { generateCommitMessage } from './generateCommitMessage.js';
  */
 export const ICommitMessageService = createDecorator<ICommitMessageService>('ai.commitMessageService');
 
+export interface IGenerateFromDiffOptions {
+	/** Optional provider id to prefer (e.g. from a model picker). */
+	readonly preferredProviderId?: string;
+	/** Optional project-specific conventions detected from the repo. */
+	readonly conventions?: CommitConventions;
+}
+
 export interface ICommitMessageService {
 	readonly _serviceBrand: undefined;
 	/**
 	 * Generate a commit message from a textual diff.
 	 *
 	 * @param diffText The staged/unstaged diff in unified diff format.
-	 * @param preferredProviderId Optional provider id to prefer (e.g. from a model picker).
+	 * @param opts Optional provider hint and project conventions.
 	 * @throws Error if no provider is available or the call fails.
 	 */
-	generateFromDiff(diffText: string, preferredProviderId?: string): Promise<string>;
+	generateFromDiff(diffText: string, opts?: IGenerateFromDiffOptions): Promise<string>;
 	/**
 	 * Whether the service is available (i.e. a provider with a model is configured).
 	 */
@@ -57,12 +65,13 @@ export class CommitMessageService extends Disposable implements ICommitMessageSe
 		super();
 	}
 
-	async generateFromDiff(diffText: string, preferredProviderId?: string): Promise<string> {
+	async generateFromDiff(diffText: string, opts?: IGenerateFromDiffOptions): Promise<string> {
 		const trimmed = diffText.trim();
 		if (!trimmed) {
 			throw new Error('No staged changes to generate a commit message from. Stage your changes first.');
 		}
 
+		const preferredProviderId = opts?.preferredProviderId;
 		const preferredProvider = preferredProviderId
 			? this.providerRegistry.getProvider(preferredProviderId) as IToolEnabledProvider | undefined
 			: undefined;
@@ -82,7 +91,7 @@ export class CommitMessageService extends Disposable implements ICommitMessageSe
 		let lastError: unknown;
 		for (const candidate of candidates) {
 			try {
-				const message = await generateCommitMessage(trimmed, candidate.provider, candidate.model);
+				const message = await generateCommitMessage(trimmed, candidate.provider, candidate.model, opts?.conventions);
 				this._onDidGenerate.fire({ diff: trimmed, message });
 				return message;
 			} catch (err) {
