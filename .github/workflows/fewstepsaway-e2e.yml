@@ -1,0 +1,51 @@
+name: FewStepsAway E2E
+
+on:
+  push:
+    paths:
+      - 'src/vs/ai/**'
+      - 'src/vs/workbench/contrib/aiChat/**'
+      - 'test/smoke/src/areas/fewstepsaway/**'
+      - 'test/mcp/src/automationTools/chat.ts'
+      - '.github/workflows/fewstepsaway-e2e.yml'
+  pull_request:
+    paths:
+      - 'src/vs/ai/**'
+      - 'src/vs/workbench/contrib/aiChat/**'
+      - 'test/smoke/src/areas/fewstepsaway/**'
+      - 'test/mcp/src/automationTools/chat.ts'
+
+jobs:
+  ai-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.13"
+      - name: Run AI module unit tests
+        run: bun run test-ai
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: ai-unit
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Compile VS Code
+        run: npm run compile
+      - name: Run FewStepsAway smoke tests
+        run: npm run smoketest-no-compile -- -f FewStepsAway
+        env:
+          VSCODE_TEST: '1'
+      - name: Upload smoke logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fewstepsaway-smoke-logs
+          path: .build/logs/

@@ -11,7 +11,12 @@
  */
 
 import './actions/contextActions.js';
+import './actions/sessionActions.js';
 import './actions/modeActions.js';
 import './actions/providerSettingsActions.js';
 import './actions/fewStepsAwayAuthActions.js';
+import './actions/composerActions.js';
+import './actions/mcpSettingsActions.js';
+import './actions/onboardingActions.js';
+import './actions/debtActions.js';
 import './disableLegacyExtension.contribution.js';

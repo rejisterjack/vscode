@@ -38,6 +38,7 @@ export interface IFewStepsAwayAuthService {
 	isAuthPending(): boolean;
 	getUser(): FewStepsAwayUserProfile | undefined;
 	getAccessToken(): Promise<string | undefined>;
+	runSecurityPreflight(content: string, organizationId?: string): Promise<{ allowed: boolean; redacted?: string }>;
 	initialize(): Promise<void>;
 	signInWithOAuth(): Promise<void>;
 	handleOAuthCallback(url: string): Promise<boolean>;
@@ -136,6 +137,20 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 		}
 		await this.refreshIfNeeded();
 		return this.session?.accessToken;
+	}
+
+	async runSecurityPreflight(content: string, organizationId?: string): Promise<{ allowed: boolean; redacted?: string }> {
+		const token = await this.getAccessToken();
+		if (!token) {
+			return { allowed: true, redacted: content };
+		}
+		try {
+			const result = await this.getApiClient().securityPreflight(token, { content, organizationId });
+			return { allowed: result.allowed, redacted: result.redacted ?? content };
+		} catch (error) {
+			this.logService.warn('[FewStepsAwayAuth] Security preflight failed:', error);
+			return { allowed: true, redacted: content };
+		}
 	}
 
 	async signInWithOAuth(): Promise<void> {
@@ -258,7 +273,7 @@ export class FewStepsAwayAuthService extends Disposable implements IFewStepsAway
 	}
 
 	private getApiBaseUrl(): string {
-		const url = this.configurationService.getValue<string>('ai.backend.apiUrl') ?? 'http://localhost:7380/api/v1';
+		const url = this.configurationService.getValue<string>('ai.backend.apiUrl') ?? 'http://localhost:21000/api/v1';
 		return url.replace(/\/$/, '');
 	}
 

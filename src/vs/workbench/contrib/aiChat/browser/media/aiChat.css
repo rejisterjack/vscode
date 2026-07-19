@@ -477,3 +477,98 @@
 .fewstepsaway-chat-question-option:hover:not(:disabled) {
 	background: var(--vscode-button-secondaryHoverBackground);
 }
+
+/* --- Composer multi-file diff dock --- */
+
+.fewstepsaway-composer-dock {
+	flex-shrink: 0;
+	border-top: 1px solid var(--vscode-panel-border);
+	padding: 8px;
+	background: var(--vscode-editor-background);
+}
+
+.fewstepsaway-composer-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 6px;
+}
+
+.fewstepsaway-composer-title {
+	font-weight: 600;
+	font-size: 12px;
+	text-transform: uppercase;
+	opacity: 0.8;
+}
+
+.fewstepsaway-composer-actions {
+	display: flex;
+	gap: 6px;
+}
+
+.fewstepsaway-composer-btn {
+	padding: 2px 8px;
+	font-size: 12px;
+	border: 1px solid var(--vscode-button-border, transparent);
+	background: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+	cursor: pointer;
+	border-radius: 2px;
+}
+
+.fewstepsaway-composer-edit {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 0;
+	font-size: 12px;
+}
+
+.fewstepsaway-composer-edit.status-accepted {
+	opacity: 0.6;
+}
+
+.fewstepsaway-composer-edit.status-rejected {
+	opacity: 0.4;
+	text-decoration: line-through;
+}
+
+.fewstepsaway-composer-path {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.fewstepsaway-composer-diff {
+	margin: 0;
+	opacity: 0.7;
+	font-size: 11px;
+}
+
+.fewstepsaway-composer-monaco-diff-host {
+	height: 220px;
+	border: 1px solid var(--vscode-panel-border);
+	margin: 4px 0;
+}
+
+.diff-hunk-block {
+	border-left: 2px solid var(--vscode-panel-border);
+	padding: 4px 8px;
+	margin: 4px 0;
+}
+
+.diff-hunk-block.hunk-accepted {
+	border-left-color: var(--vscode-testing-iconPassed);
+}
+
+.diff-hunk-block.hunk-rejected {
+	opacity: 0.5;
+	text-decoration: line-through;
+}
+
+.fewstepsaway-inline-edit-zone .fewstepsaway-inline-edit-input {
+	width: 100%;
+	min-height: 48px;
+	resize: vertical;
+}

@@ -15,7 +15,7 @@ import { Position } from '../../editor/common/core/position.js';
 import { CancellationToken } from '../../base/common/cancellation.js';
 import { extractPrefixSuffix, buildFimPrompt, FimInputs, CLAUDE_FIM_TEMPLATE } from './fimPromptBuilder.js';
 import { postprocessAutocompleteSuggestion, shouldSkipAutocomplete } from './postprocess.js';
-import { ErrorBackoff } from './errorBackoff.js';
+import { IVisibleCodeTracker } from './visibleCodeTracker.js';
 
 /**
  * The inline suggestion service powers FIM (fill-in-the-middle) tab completion.
@@ -28,22 +28,10 @@ export const IInlineSuggestionService = createDecorator<IInlineSuggestionService
 
 export interface IInlineSuggestionService {
 	readonly _serviceBrand: undefined;
-	/**
-	 * Get an inline completion suggestion for the given model and position.
-	 * Returns the suggestion text, or undefined if no suggestion is available.
-	 */
 	getSuggestion(model: ITextModel, position: Position, token?: CancellationToken): Promise<string | undefined>;
-	/**
-	 * Whether the service is enabled and available.
-	 */
 	isEnabled(): boolean;
-	/**
-	 * Whether the service is temporarily backed off due to errors.
-	 */
 	isBackoffActive(): boolean;
-	/**
-	 * Fired when the backoff state changes (tripped or reset).
-	 */
+	getAdaptiveDelay(): number;
 	readonly onDidChangeBackoff: Event<void>;
 }
 
@@ -58,7 +46,8 @@ export class InlineSuggestionService extends Disposable implements IInlineSugges
 
 	constructor(
 		@IProviderRegistry private readonly providerRegistry: IProviderRegistry,
-		@IConfigurationService private readonly configService: IConfigurationService
+		@IConfigurationService private readonly configService: IConfigurationService,
+		@IVisibleCodeTracker private readonly visibleCodeTracker: IVisibleCodeTracker,
 	) {
 		super();
 		this._register(this.backoff.onDidTrip(() => this._onDidChangeBackoff.fire()));
@@ -84,11 +73,18 @@ export class InlineSuggestionService extends Disposable implements IInlineSugges
 
 		const { prefix, suffix } = extractPrefixSuffix(model, position);
 		const language = model.getLanguageId();
-		const inputs: FimInputs = { prefix, suffix, language, snippets: [] };
+		const snippets = this.visibleCodeTracker.getVisibleSnippets(3, 30).map(s => ({
+			filePath: s.filePath,
+			text: s.text,
+			score: 1,
+		}));
+		const inputs: FimInputs = { prefix, suffix, language, snippets };
 		const prompt = buildFimPrompt(inputs, CLAUDE_FIM_TEMPLATE);
 
 		const maxTokens = this.configService.getValue<number>('ai.completion.maxTokens') ?? 100;
-		const modelId = this.configService.getValue<string>('ai.chat.model') ?? '';
+		const modelId = this.configService.getValue<string>('ai.completion.model')
+			|| this.configService.getValue<string>('ai.chat.model')
+			|| '';
 
 		const startTime = Date.now();
 		try {
@@ -124,8 +120,9 @@ export class InlineSuggestionService extends Disposable implements IInlineSugges
 	 * `references/kilocode/packages/kilo-vscode/src/services/autocomplete/classic-auto-complete/AutocompleteInlineCompletionProvider.ts:44-66`.
 	 */
 	getAdaptiveDelay(): number {
+		const configured = this.configService.getValue<number>('ai.completion.delay');
 		const MIN = 150;
-		const INITIAL = 300;
+		const INITIAL = configured ?? 300;
 		const MAX = 1000;
 		if (this.latencyHistory.length === 0) { return INITIAL; }
 		const avg = this.latencyHistory.reduce((a, b) => a + b, 0) / this.latencyHistory.length;

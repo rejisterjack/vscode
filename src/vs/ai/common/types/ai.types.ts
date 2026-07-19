@@ -19,7 +19,7 @@ import { Range } from '../../../editor/common/core/range.js';
  *  - `plan`: plan-mode (edits restricted to plan files)
  *  - `learning`: teaching/explanation mode (legacy)
  */
-export type AIMode = 'coding' | 'ask' | 'architect' | 'debug' | 'plan' | 'learning';
+export type AIMode = 'coding' | 'ask' | 'architect' | 'debug' | 'plan' | 'learning' | 'review';
 
 /**
  * AI request context containing all necessary information for an AI request

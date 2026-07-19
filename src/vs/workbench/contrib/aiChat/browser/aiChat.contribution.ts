@@ -26,6 +26,23 @@ import './fewStepsAwayChatModes.contribution.js';
 import './fewStepsAwayProviderPicker.contribution.js';
 import './actions/fewStepsAwayEnhancePromptActions.js';
 import './actions/fewStepsAwayGenerateCommitMessageActions.js';
+import './composerOverlay.contribution.js';
+import './contextWindowIndicator.contribution.js';
+import './actions/inlineEditActions.js';
+import './agentChatEditingBridge.js';
+import './inlineEditSession.js';
+import './codeBlockApplyService.js';
+import './fewStepsAwayCodeBlockActions.contribution.js';
+import './questionToolBridge.contribution.js';
+import './mentionAutocomplete.contribution.js';
+import './mentionChips.contribution.js';
+import './mentionInlineCompletion.contribution.js';
+import './chatInputSuggestion.contribution.js';
+import './mcpPanel.contribution.js';
+import { fewStepsAwayMcpViewDescriptor } from './mcpPanel.contribution.js';
+import './backgroundAgents.contribution.js';
+import './actions/reviewActions.js';
+import './reviewPanel.contribution.js';
 
 // Re-export for backwards compatibility with any external importers.
 export { FewStepsAwayChatViewId, FewStepsAwayChatContainerId };
@@ -78,4 +95,4 @@ const chatViewDescriptor = {
 };
 
 Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry)
-	.registerViews([chatViewDescriptor], chatViewContainer);
+	.registerViews([chatViewDescriptor, fewStepsAwayMcpViewDescriptor], chatViewContainer);

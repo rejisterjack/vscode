@@ -10,6 +10,10 @@ import { IConfigurationService } from '../../platform/configuration/common/confi
 import { IToolEnabledProvider } from '../provider/common/protocolBackedProvider.js';
 import { IToolRegistry } from '../tool/toolRegistry.js';
 import { ITool, ToolContext, ToolResult } from '../tool/toolTypes.js';
+import { evaluatePermission, PermissionRuleset } from '../mode/permissionRuleset.js';
+import { IAgentPermissionService } from './agentPermissionService.js';
+import { claimsEditWithoutTool, enrichValidationResult } from './agentLoopValidation.js';
+import { isEditTool } from '../integrity/editIntegrityService.js';
 import {
 	Message, ContentPart, SystemPart, ToolDefinition, ToolChoice,
 	GenerationOptions, ModelRef
@@ -66,6 +70,7 @@ export interface AgentLoopOptions {
 	readonly sessionId: string;
 	readonly messageId: string;
 	readonly abortSignal?: CancellationToken;
+	readonly permissionRuleset?: PermissionRuleset;
 }
 
 export interface IAgentLoop {
@@ -81,7 +86,8 @@ export class AgentLoop extends Disposable implements IAgentLoop {
 
 	constructor(
 		@IToolRegistry private readonly toolRegistry: IToolRegistry,
-		@IConfigurationService private readonly configService: IConfigurationService
+		@IConfigurationService private readonly configService: IConfigurationService,
+		@IAgentPermissionService private readonly permissionService: IAgentPermissionService,
 	) {
 		super();
 	}
@@ -90,10 +96,13 @@ export class AgentLoop extends Disposable implements IAgentLoop {
 		const maxSteps = options.maxSteps ?? 50;
 		const steps: AgentStep[] = [];
 		const autoApprove = this.configService.getValue<boolean>('ai.chat.autoApproveTools') ?? false;
+		const autoFixMaxAttempts = this.configService.getValue<number>('ai.edit.autoFixMaxAttempts') ?? 2;
+		let validationFixAttempts = 0;
 		const messages = [...options.messages];
 
 		for (let stepIndex = 0; stepIndex < maxSteps; stepIndex++) {
 			yield { type: 'step-start', index: stepIndex };
+			validationFixAttempts = 0;
 
 			const cts = new CancellationTokenSource();
 			const disposeAbort = options.abortSignal?.onCancellationRequested(() => cts.cancel());
@@ -150,11 +159,32 @@ export class AgentLoop extends Disposable implements IAgentLoop {
 			const toolResults: Array<{ id: string; name: string; result: ToolResult }> = [];
 			for (const tc of toolCalls) {
 				const tool = this.toolRegistry.getTool(tc.name);
+				const args = (tc.input ?? {}) as Record<string, unknown>;
 				if (!tool) {
 					const errorResult: ToolResult = { title: `Unknown tool: ${tc.name}`, output: `Error: unknown tool ${tc.name}` };
 					toolResults.push({ id: tc.id, name: tc.name, result: errorResult });
 					yield { type: 'tool-result', id: tc.id, name: tc.name, result: errorResult };
 					continue;
+				}
+
+				const ruleset = options.permissionRuleset;
+				if (ruleset) {
+					const verdict = evaluatePermission(ruleset, tc.name, args);
+					if (verdict === 'deny') {
+						const denied: ToolResult = { title: `Denied: ${tc.name}`, output: `Permission denied for tool ${tc.name}` };
+						toolResults.push({ id: tc.id, name: tc.name, result: denied });
+						yield { type: 'tool-result', id: tc.id, name: tc.name, result: denied };
+						continue;
+					}
+					if (verdict === 'ask' && !autoApprove) {
+						const allowed = await this.permissionService.ask(`Allow tool **${tc.name}**?`);
+						if (!allowed) {
+							const denied: ToolResult = { title: `Denied: ${tc.name}`, output: `User denied tool ${tc.name}` };
+							toolResults.push({ id: tc.id, name: tc.name, result: denied });
+							yield { type: 'tool-result', id: tc.id, name: tc.name, result: denied };
+							continue;
+						}
+					}
 				}
 
 				const ctx: ToolContext = {
@@ -164,13 +194,16 @@ export class AgentLoop extends Disposable implements IAgentLoop {
 					abortSignal: cts.token,
 					ask: async (prompt: string) => {
 						if (autoApprove) { return true; }
-						// Delegate to the question/permission system.
-						return true; // Simplified -- real impl shows a permission prompt.
+						return this.permissionService.ask(prompt);
 					}
 				};
 
 				try {
-					const result = await tool.execute(tc.input as Record<string, unknown>, ctx);
+					let result = await tool.execute(args, ctx);
+					result = enrichValidationResult(result, tc.name, validationFixAttempts, autoFixMaxAttempts);
+					if (isEditTool(tc.name) && result.validation && !result.validation.ok && validationFixAttempts < autoFixMaxAttempts) {
+						validationFixAttempts++;
+					}
 					toolResults.push({ id: tc.id, name: tc.name, result });
 					yield { type: 'tool-result', id: tc.id, name: tc.name, result };
 				} catch (err) {
@@ -204,8 +237,18 @@ export class AgentLoop extends Disposable implements IAgentLoop {
 			steps.push(step);
 			yield { type: 'step-finish', step };
 
-			// If the LLM made no tool calls, we're done.
+			// If the LLM made no tool calls, we're done (with hallucination guard).
 			if (toolCalls.length === 0) {
+				const assistantText = textParts.join('');
+				if (claimsEditWithoutTool(assistantText)) {
+					messages.push({
+						role: 'user',
+						content: 'You described a file change but did not call a tool. Use edit, write, or apply_patch to make changes — do not only describe them.',
+					});
+					if (stepIndex < maxSteps - 1) {
+						continue;
+					}
+				}
 				yield { type: 'finish', steps };
 				return;
 			}

@@ -7,6 +7,7 @@ import { CodeContext, ContextOptions, ContextChange, FileContext, EditContext } 
 import { Event } from '../../../base/common/event.js';
 import { IDisposable } from '../../../base/common/lifecycle.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
+import { ParsedMention } from '../mentionParser.js';
 
 /**
  * Context management types for FewStepsAway
@@ -62,6 +63,11 @@ export interface IContextManager extends IDisposable {
 	 * Get current selection context
 	 */
 	getSelectionContext(): Promise<EditorSelectionContext | undefined>;
+
+	/**
+	 * Resolve @-mentions into context snippets for chat.
+	 */
+	resolveMentions(mentions: readonly ParsedMention[]): Promise<string[]>;
 
 	/**
 	 * Estimate tokens in context

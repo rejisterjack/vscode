@@ -131,6 +131,14 @@ export class FewStepsAwayChatViewPane extends ViewPane {
 		this._widget?.focusInput();
 	}
 
+	getChatWidget(): ChatWidget {
+		return this._widget;
+	}
+
+	getSessionResource(): import('../../../../base/common/uri.js').URI | undefined {
+		return this._widget?.viewModel?.sessionResource;
+	}
+
 	override setExpanded(expanded: boolean): boolean {
 		const changed = super.setExpanded(expanded);
 		if (changed && expanded) {

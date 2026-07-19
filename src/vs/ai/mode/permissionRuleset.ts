@@ -84,9 +84,9 @@ function matchesTool(rule: PermissionRule, toolId: string): boolean {
 export const codeRuleset: PermissionRuleset = {
 	rules: [
 		{ tool: 'read', verdict: 'allow' },
-		{ tool: 'write', verdict: 'allow', pathPattern: '**/.env*', },
 		{ tool: 'write', verdict: 'deny', pathPattern: '**/.env*' },
 		{ tool: 'edit', verdict: 'deny', pathPattern: '**/.env*' },
+		{ tool: 'apply_patch', verdict: 'deny', pathPattern: '**/.env*' },
 		{ tool: 'bash', verdict: 'allow' },
 		{ tool: 'glob', verdict: 'allow' },
 		{ tool: 'grep', verdict: 'allow' },
@@ -151,6 +151,7 @@ export const askRuleset: PermissionRuleset = {
 		{ tool: 'websearch', verdict: 'allow' },
 		{ tool: 'write', verdict: 'deny' },
 		{ tool: 'edit', verdict: 'deny' },
+		{ tool: 'apply_patch', verdict: 'deny' },
 	],
 	default: 'deny'
 };
@@ -181,6 +182,10 @@ export const planRuleset: PermissionRuleset = {
 		{ tool: 'edit', verdict: 'allow', pathPattern: '**/.cursor/plans/*' },
 		{ tool: 'edit', verdict: 'allow', pathPattern: '**/plans/*' },
 		{ tool: 'edit', verdict: 'allow', pathPattern: '**/.plans/*' },
+		{ tool: 'apply_patch', verdict: 'allow', pathPattern: '**/.cursor/plans/*' },
+		{ tool: 'apply_patch', verdict: 'allow', pathPattern: '**/plans/*' },
+		{ tool: 'apply_patch', verdict: 'allow', pathPattern: '**/.plans/*' },
+		{ tool: 'apply_patch', verdict: 'deny', pathPattern: '**/.env*' },
 	],
 	default: 'deny'
 };
@@ -196,3 +201,8 @@ export const architectRuleset: PermissionRuleset = planRuleset;
  * requires running code and inspecting state.
  */
 export const debugRuleset: PermissionRuleset = codeRuleset;
+
+/**
+ * The "review" mode ruleset: read-only change review (Bugbot-style).
+ */
+export const reviewRuleset: PermissionRuleset = askRuleset;

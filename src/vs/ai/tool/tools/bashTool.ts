@@ -4,6 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from '../../../base/common/cancellation.js';
+import { IWorkspaceContextService } from '../../../platform/workspace/common/workspace.js';
+import { IFileService } from '../../../platform/files/common/files.js';
+import { IEditIntegrityService } from '../../integrity/editIntegrityService.js';
+import { resolveToolPathFsPath } from '../../integrity/workspacePathUtils.js';
 import { ITool, ToolResult } from '../toolTypes.js';
 import type { ChildProcessWithoutNullStreams } from 'child_process';
 
@@ -20,17 +24,27 @@ export class BashTool implements ITool {
 		type: 'object',
 		properties: {
 			command: { type: 'string', description: 'The shell command to execute.' },
-			cwd: { type: 'string', description: 'Working directory. Optional; defaults to the workspace root.' }
+			cwd: { type: 'string', description: 'Working directory (workspace-relative or absolute). Optional; defaults to the workspace root.' }
 		},
 		required: ['command']
 	};
 
+	constructor(
+		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
+		@IEditIntegrityService private readonly editIntegrity: IEditIntegrityService,
+		@IFileService private readonly fileService: IFileService,
+	) { }
+
 	async execute(args: { command: string; cwd?: string }, ctx: { abortSignal: CancellationToken }): Promise<ToolResult> {
+		const defaultCwd = this.workspaceService.getWorkspace().folders[0]?.uri.fsPath;
+		const resolvedCwd = args.cwd
+			? await resolveToolPathFsPath(this.editIntegrity, this.workspaceService, this.fileService, args.cwd)
+			: defaultCwd;
 		const cp = await import('child_process');
 		return new Promise((resolve) => {
 			const spawnOptions: { cwd?: string; shell: string } = { shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash' };
-			if (args.cwd) {
-				spawnOptions.cwd = args.cwd;
+			if (resolvedCwd) {
+				spawnOptions.cwd = resolvedCwd;
 			}
 			const child: ChildProcessWithoutNullStreams = cp.spawn(args.command, [], spawnOptions);
 			let stdout = '';

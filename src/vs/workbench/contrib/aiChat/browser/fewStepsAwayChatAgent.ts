@@ -20,10 +20,23 @@ import { IToolEnabledProvider } from '../../../../ai/provider/common/protocolBac
 import { IToolRegistry } from '../../../../ai/tool/toolRegistry.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
+import { IContextManager } from '../../../../ai/common/types/context.types.js';
+import { parseMentions } from '../../../../ai/common/mentionParser.js';
+import { chatVariablesToMentions } from './mentionAttachmentBridge.js';
+import { IRulesLoader } from '../../../../ai/rules/rulesLoader.js';
+import { getChatEditingBridge } from './agentChatEditingBridge.js';
+import { isEditTool } from '../../../../ai/integrity/editIntegrityService.js';
+import { IEditIntegrityService } from '../../../../ai/integrity/editIntegrityService.js';
+import { ToolEditContent, ToolResult } from '../../../../ai/tool/toolTypes.js';
 import { ILanguageModelsService } from '../../chat/common/languageModels.js';
 import { IChatAgentHistoryEntry, IChatAgentImplementation, IChatAgentRequest, IChatAgentResult } from '../../chat/common/participants/chatAgents.js';
 import { IChatProgress } from '../../chat/common/chatService/chatService.js';
 import { asToolEnabledProvider, parseFewStepsAwayModelId } from './fewStepsAwayLanguageModelProvider.js';
+import { isTestProviderEnabled } from '../../../../ai/provider/test/testProvider.js';
+import { mapToolCallToProgress, mapToolResultToProgress } from './fewStepsAwayToolProgress.js';
+import { IReviewFindingsService } from '../../../../ai/review/reviewFindingsService.js';
+import { IViewsService } from '../../../services/views/common/viewsService.js';
+import { ReviewFindingsViewId } from './reviewPanel.contribution.js';
 
 const AGENT_ID_TO_MODE: Record<string, AIMode> = {
 	'fewstepsaway.chat': 'ask',
@@ -47,6 +60,8 @@ const MODE_NAME_TO_ID: Record<string, AIMode> = {
  */
 export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImplementation {
 
+	private readonly pendingToolInputs = new Map<string, unknown>();
+
 	constructor(
 		@IAIService _aiService: IAIService,
 		@IFewStepsAwayAuthService private readonly authService: IFewStepsAwayAuthService,
@@ -57,8 +72,18 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 		@ILanguageModelsService private readonly languageModelsService: ILanguageModelsService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@ILogService private readonly logService: ILogService,
+		@IContextManager private readonly contextManager: IContextManager,
+		@IRulesLoader private readonly rulesLoader: IRulesLoader,
+		@IEditIntegrityService private readonly editIntegrity: IEditIntegrityService,
+		@IReviewFindingsService private readonly reviewFindingsService: IReviewFindingsService,
+		@IViewsService private readonly viewsService: IViewsService,
 	) {
 		super();
+	}
+
+	private isTestMode(): boolean {
+		return isTestProviderEnabled()
+			|| (this.configurationService.getValue<boolean>('ai.test.mockProvider.enabled') ?? false);
 	}
 
 	async invoke(
@@ -67,7 +92,7 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 		history: IChatAgentHistoryEntry[],
 		token: CancellationToken
 	): Promise<IChatAgentResult> {
-		if (!this.authService.isSignedIn()) {
+		if (!this.isTestMode() && !this.authService.isSignedIn()) {
 			progress([{
 				kind: 'markdownContent',
 				content: new MarkdownString(
@@ -113,13 +138,35 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 
 		const allTools = this.toolRegistry.getAllTools();
 		const enabledTools = this.modeRegistry.getEnabledTools(mode.id, allTools);
-		const messages = this.buildMessages(history, request);
+
+		const preflight = this.isTestMode()
+			? { allowed: true as const }
+			: await this.authService.runSecurityPreflight(request.message);
+		if (!preflight.allowed) {
+			progress([{
+				kind: 'markdownContent',
+				content: new MarkdownString(localize('fewstepsaway.preflightBlocked', "Request blocked by organization security policy.")),
+			}]);
+			return { errorDetails: { message: 'Security preflight blocked', responseIsIncomplete: true } };
+		}
+		const safeRequest = preflight.redacted && preflight.redacted !== request.message
+			? { ...request, message: preflight.redacted }
+			: request;
+
+		const messages = this.buildMessages(history, safeRequest);
+		const inlineMentions = parseMentions(safeRequest.message);
+		const attachmentMentions = chatVariablesToMentions(safeRequest.variables);
+		const mentionSnippets = await this.contextManager.resolveMentions([...inlineMentions, ...attachmentMentions]);
+		const contextBlock = await this.buildContextBlock(mentionSnippets);
+		const rules = await this.rulesLoader.loadWorkspaceRules();
+		const rulesBlock = rules ? `\n\n## Workspace rules\n${rules}` : '';
 		const system: SystemPart[] = [{
 			type: 'text',
-			text: this.buildSystemPrompt(mode, request),
+			text: this.buildSystemPrompt(mode, request) + contextBlock + rulesBlock,
 		}];
 
 		const temperature = mode.temperature ?? this.configurationService.getValue<number>('ai.chat.temperature') ?? 0.3;
+		let assistantOutput = '';
 
 		try {
 			for await (const event of this.agentLoop.run({
@@ -129,6 +176,7 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 				messages,
 				tools: enabledTools,
 				generation: { temperature },
+				permissionRuleset: mode.permissionRuleset,
 				sessionId: request.sessionResource.toString(),
 				messageId: request.requestId,
 				abortSignal: token,
@@ -139,7 +187,23 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 				if (event.type === 'error') {
 					return { errorDetails: { message: event.error, responseIsIncomplete: true } };
 				}
+				if (event.type === 'tool-result') {
+					this.notifyChatEditingBridge(request.sessionResource, event.name, event.result);
+				}
+				if (event.type === 'text-delta') {
+					assistantOutput += event.text;
+				}
+				if (event.type === 'step-finish' && event.step.text) {
+					assistantOutput = event.step.text;
+				}
 				this.handleAgentEvent(event, progress);
+			}
+			if (mode.id === 'review' && assistantOutput.trim()) {
+				const findings = this.reviewFindingsService.parseFindings(assistantOutput);
+				if (findings.length > 0) {
+					this.reviewFindingsService.setFindings(findings);
+					void this.viewsService.openView(ReviewFindingsViewId, false);
+				}
 			}
 		} catch (error) {
 			if (isCancellationError(error)) {
@@ -215,6 +279,14 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 	}
 
 	private resolveModel(request: IChatAgentRequest): { provider: IToolEnabledProvider; model: ModelRef } {
+		if (this.isTestMode()) {
+			const testProvider = asToolEnabledProvider(this.providerRegistry.getProvider('fewstepsaway-test'));
+			if (testProvider) {
+				this.providerRegistry.setActiveProvider('fewstepsaway-test');
+				return { provider: testProvider, model: { id: 'test-model' } };
+			}
+		}
+
 		const explicitModelId = request.userSelectedModelId
 			|| this.configurationService.getValue<string>('ai.chat.model')
 			|| '';
@@ -258,6 +330,22 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 		return { provider, model: { id: resolvedModelId } };
 	}
 
+	private async buildContextBlock(mentionSnippets: string[]): Promise<string> {
+		const parts: string[] = [];
+		if (mentionSnippets.length > 0) {
+			parts.push('\n\n## Referenced context\n' + mentionSnippets.join('\n\n'));
+		}
+		try {
+			const ctx = await this.contextManager.gatherContext({ maxTokens: 2000 });
+			if (ctx.currentFile?.content) {
+				parts.push(`\n\n## Active file: ${ctx.currentFile.path}\n${ctx.currentFile.content.slice(0, 1500)}`);
+			}
+		} catch {
+			// optional
+		}
+		return parts.join('');
+	}
+
 	private buildMessages(history: IChatAgentHistoryEntry[], request: IChatAgentRequest): Message[] {
 		const messages: Message[] = [];
 
@@ -281,6 +369,33 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 		return messages;
 	}
 
+	private notifyChatEditingBridge(
+		sessionResource: import('../../../../base/common/uri.js').URI,
+		toolName: string,
+		result: ToolResult,
+	): void {
+		if (!isEditTool(toolName)) {
+			return;
+		}
+		if (result.validation && !result.validation.ok) {
+			return;
+		}
+		const editContent = result.metadata?.editContent as ToolEditContent | undefined;
+		if (!editContent) {
+			return;
+		}
+		if (editContent.staged) {
+			return;
+		}
+		const bridge = getChatEditingBridge();
+		if (!bridge) {
+			return;
+		}
+		void this.editIntegrity.resolveWorkspaceUriAsync(editContent.filePath).then(fileUri => {
+			bridge.notifyFileEdit(sessionResource, fileUri, editContent.original, editContent.modified);
+		});
+	}
+
 	private handleAgentEvent(
 		event: AgentEvent,
 		progress: (parts: IChatProgress[]) => void,
@@ -300,20 +415,13 @@ export class FewStepsAwayChatAgent extends Disposable implements IChatAgentImple
 				}]);
 				break;
 			case 'tool-call':
-				progress([{
-					kind: 'progressMessage',
-					content: new MarkdownString(`**Tool:** ${event.name}`),
-				}]);
+				this.pendingToolInputs.set(event.id, event.input);
+				progress([mapToolCallToProgress(event, event.input)]);
 				break;
 			case 'tool-result': {
-				const output = typeof event.result.output === 'string'
-					? event.result.output
-					: JSON.stringify(event.result.output);
-				const preview = output.length > 500 ? `${output.slice(0, 500)}…` : output;
-				progress([{
-					kind: 'progressMessage',
-					content: new MarkdownString(`**${event.name}:** ${preview}`),
-				}]);
+				const input = this.pendingToolInputs.get(event.id);
+				this.pendingToolInputs.delete(event.id);
+				progress([mapToolResultToProgress(event, input)]);
 				break;
 			}
 		}

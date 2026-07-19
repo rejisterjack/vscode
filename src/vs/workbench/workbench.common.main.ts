@@ -446,6 +446,12 @@ import '../ai/tool/tools.contribution.js';
 import '../ai/mode/modes.contribution.js';
 import '../ai/suggestion/suggestion.contribution.js';
 import '../ai/codeActions/codeActions.contribution.js';
+import '../ai/indexing/indexing.contribution.js';
+import '../ai/mcp/mcp.contribution.js';
+import '../ai/composer/composer.contribution.js';
+import '../ai/extension-api/extensionApi.contribution.js';
+import '../ai/onboarding/onboarding.contribution.js';
+import '../ai/debt/debt.contribution.js';
 
 // Native AI Chat Panel (AuxiliaryBar view)
 import './contrib/aiChat/browser/aiChat.contribution.js';

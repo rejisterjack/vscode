@@ -6,30 +6,31 @@
 import { InstantiationType, registerSingleton } from '../../platform/instantiation/common/extensions.js';
 import { IModeRegistry, ModeRegistry, AIModeDefinition } from './modeRegistry.js';
 import {
-	codeRuleset, askRuleset, architectRuleset, debugRuleset, planRuleset
+	codeRuleset, askRuleset, architectRuleset, debugRuleset, planRuleset, reviewRuleset
 } from './permissionRuleset.js';
 import { CODE_MODE_PROMPT } from './prompts/code.js';
 import { ASK_MODE_PROMPT } from './prompts/ask.js';
 import { ARCHITECT_MODE_PROMPT } from './prompts/architect.js';
 import { DEBUG_MODE_PROMPT } from './prompts/debug.js';
 import { PLAN_MODE_PROMPT } from './prompts/plan.js';
+import { REVIEW_MODE_PROMPT } from './prompts/review.js';
 
 registerSingleton(IModeRegistry, ModeRegistry, InstantiationType.Delayed);
 
 /**
  * All tools enabled in full-access modes.
  */
-const FULL_TOOLS = ['read', 'write', 'edit', 'glob', 'grep', 'bash', 'webfetch', 'websearch', 'todo', 'question'] as const;
+const FULL_TOOLS = ['read', 'write', 'edit', 'apply_patch', 'glob', 'grep', 'bash', 'webfetch', 'websearch', 'todo', 'question', 'codebase_search'] as const;
 
 /**
  * Read-only tools (for ask mode).
  */
-const READONLY_TOOLS = ['read', 'glob', 'grep', 'webfetch', 'websearch', 'question'] as const;
+const READONLY_TOOLS = ['read', 'glob', 'grep', 'webfetch', 'websearch', 'question', 'codebase_search'] as const;
 
 /**
  * Plan tools (read-only + todo + write restricted to plans).
  */
-const PLAN_TOOLS = ['read', 'glob', 'grep', 'bash', 'webfetch', 'websearch', 'todo', 'question', 'write', 'edit'] as const;
+const PLAN_TOOLS = ['read', 'glob', 'grep', 'bash', 'webfetch', 'websearch', 'todo', 'question', 'write', 'edit', 'apply_patch', 'codebase_search'] as const;
 
 /**
  * All built-in modes. Port of `patchAgents()` in
@@ -90,6 +91,15 @@ export function getBuiltinModes(): readonly AIModeDefinition[] {
 			permissionRuleset: askRuleset,
 			enabledTools: READONLY_TOOLS,
 			temperature: 0.5
+		},
+		{
+			id: 'review',
+			displayName: 'Review',
+			description: 'Read-only PR review. Reports structured findings.',
+			systemPrompt: REVIEW_MODE_PROMPT,
+			permissionRuleset: reviewRuleset,
+			enabledTools: READONLY_TOOLS,
+			temperature: 0.2
 		}
 	];
 }

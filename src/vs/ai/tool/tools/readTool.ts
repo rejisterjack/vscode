@@ -5,7 +5,7 @@
 
 import { IFileService } from '../../../platform/files/common/files.js';
 import { ITextFileService } from '../../../workbench/services/textfile/common/textfiles.js';
-import { URI } from '../../../base/common/uri.js';
+import { IEditIntegrityService } from '../../integrity/editIntegrityService.js';
 import { ITool, ToolResult } from '../toolTypes.js';
 
 /**
@@ -27,11 +27,12 @@ export class ReadFileTool implements ITool {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@ITextFileService private readonly textFileService: ITextFileService
+		@ITextFileService private readonly textFileService: ITextFileService,
+		@IEditIntegrityService private readonly editIntegrity: IEditIntegrityService,
 	) { }
 
 	async execute(args: { filePath: string; offset?: number; limit?: number }): Promise<ToolResult> {
-		const uri = URI.file(args.filePath);
+		const uri = await this.editIntegrity.resolveWorkspaceUriAsync(args.filePath);
 		try {
 			const stat = await this.fileService.resolve(uri);
 			if (stat.isDirectory) {
@@ -51,9 +52,11 @@ export class ReadFileTool implements ITool {
 		const limit = args.limit ?? 2000;
 		const selected = lines.slice(offset, offset + limit);
 		const numbered = selected.map((line, i) => `${String(offset + i + 1).padStart(6, ' ')}|${line}`);
+		const contentHash = this.editIntegrity.computeContentHash(content.value);
 		return {
 			title: `Read ${args.filePath}`,
-			output: numbered.join('\n')
+			output: `${numbered.join('\n')}\n\n(contentHash: ${contentHash} — pass as expectedHash to edit when replacing)`,
+			metadata: { contentHash, filePath: args.filePath },
 		};
 	}
 }

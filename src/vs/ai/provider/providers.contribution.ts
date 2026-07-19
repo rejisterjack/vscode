@@ -22,6 +22,7 @@ import { OllamaProvider } from './ollama/ollamaProvider.js';
 import { LMStudioProvider } from './lmstudio/lmStudioProvider.js';
 import { ZaiProvider } from './zai/zaiProvider.js';
 import { createOpenAICompatibleProviders } from './openaiCompatible/openaiCompatibleProvider.js';
+import { TestProvider, isTestProviderEnabled } from './test/testProvider.js';
 
 /**
  * Register all native LLM providers (excluding the Kilocode gateway). Called
@@ -59,6 +60,14 @@ export function registerLLMProviders(
 	for (const provider of providers) {
 		if (!registry.getProvider(provider.id)) {
 			registry.register(provider);
+		}
+	}
+
+	if (isTestProviderEnabled() || configService.getValue<boolean>('ai.test.mockProvider.enabled')) {
+		const testProvider = instantiationService.createInstance(TestProvider);
+		if (!registry.getProvider(testProvider.id)) {
+			registry.register(testProvider);
+			registry.setActiveProvider(testProvider.id);
 		}
 	}
 }

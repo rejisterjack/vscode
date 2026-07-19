@@ -6,6 +6,7 @@
 import { Disposable } from '../../base/common/lifecycle.js';
 import { createDecorator } from '../../platform/instantiation/common/instantiation.js';
 import { IEditorService } from '../../workbench/services/editor/common/editorService.js';
+import { IModelService } from '../../editor/common/services/model.js';
 import { ITextModel } from '../../editor/common/model.js';
 import { Range } from '../../editor/common/core/range.js';
 import { IModelContentChange } from '../../editor/common/model/mirrorTextModel.js';
@@ -40,12 +41,20 @@ export class EditHistoryTracker extends Disposable implements IEditHistoryTracke
 	private history: EditRecord[] = [];
 
 	constructor(
-		@IEditorService editorService: IEditorService
+		@IEditorService editorService: IEditorService,
+		@IModelService modelService: IModelService,
 	) {
 		super();
-		// Subscribe to text model changes across all editors.
-		// Note: a production implementation would use IModelService.onDidCreateModel
-		// and attach listeners to each model. This is simplified.
+		this._register(modelService.onModelAdded(model => {
+			this._register(model.onDidChangeContent(event => {
+				this.recordChange(model.uri.fsPath, model, event.changes);
+			}));
+		}));
+		for (const model of modelService.getModels()) {
+			this._register(model.onDidChangeContent(event => {
+				this.recordChange(model.uri.fsPath, model, event.changes);
+			}));
+		}
 	}
 
 	/**

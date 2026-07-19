@@ -33,6 +33,14 @@ export class FimInlineCompletionProvider implements InlineCompletionsProvider {
 			return undefined;
 		}
 
+		const delay = this.suggestionService.getAdaptiveDelay();
+		if (delay > 0) {
+			await new Promise<void>(resolve => setTimeout(resolve, delay));
+			if (token.isCancellationRequested) {
+				return undefined;
+			}
+		}
+
 		const suggestion = await this.suggestionService.getSuggestion(model, position, token);
 		if (!suggestion || token.isCancellationRequested) {
 			return undefined;

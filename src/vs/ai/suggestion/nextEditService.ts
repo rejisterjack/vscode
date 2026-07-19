@@ -79,7 +79,9 @@ export class NextEditService extends Disposable implements INextEditService {
 		const context = this.buildRequestContext(model, position);
 		const prompt = this.buildPrompt(context);
 
-		const modelId = this.configService.getValue<string>('ai.chat.model') ?? '';
+		const modelId = this.configService.getValue<string>('ai.completion.model')
+			|| this.configService.getValue<string>('ai.chat.model')
+			|| '';
 		const system: SystemPart[] = [{ type: 'text', text: NES_SYSTEM_PROMPT }];
 		const messages: Message[] = [{ role: 'user', content: prompt }];
 		const generation: GenerationOptions = { maxTokens: 512, temperature: 0.1 };
@@ -152,10 +154,33 @@ Predict the next edit the user is likely to make at the cursor. Return ONLY the 
 	private parseSuggestion(text: string, model: ITextModel, position: Position): NextEditSuggestion | undefined {
 		const cleaned = text.trim().replace(/^```[a-zA-Z]*\n?/g, '').replace(/\n?```$/g, '').trim();
 		if (!cleaned) { return undefined; }
-		// Simple insertion for now -- full diff parsing is a follow-up.
+
+		const replaceMatch = /^REPLACE\s+([\s\S]+?)\s+WITH\s+([\s\S]+)$/i.exec(cleaned);
+		if (replaceMatch) {
+			const oldText = replaceMatch[1]!.trim();
+			const newText = replaceMatch[2]!.trim();
+			const fileContent = model.getValue();
+			const index = fileContent.indexOf(oldText);
+			if (index === -1) {
+				return undefined;
+			}
+			const start = model.getPositionAt(index);
+			const end = model.getPositionAt(index + oldText.length);
+			return {
+				insertText: newText,
+				range: {
+					startLineNumber: start.lineNumber,
+					startColumn: start.column,
+					endLineNumber: end.lineNumber,
+					endColumn: end.column,
+				},
+				isDeletion: newText.length === 0,
+			};
+		}
+
 		return {
 			insertText: cleaned,
-			isDeletion: false
+			isDeletion: false,
 		};
 	}
 }

@@ -12,6 +12,16 @@ import {
 	FewStepsAwayUserProfile,
 } from './fewStepsAwayAuthTypes.js';
 
+export type AgentTaskStatus = 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
+
+export interface AgentTaskResponse {
+	readonly id: string;
+	readonly prompt: string;
+	readonly status: AgentTaskStatus;
+	readonly result?: string;
+	readonly error?: string;
+}
+
 const NATIVE_PLATFORM_HEADER = 'native';
 
 export class FewStepsAwayApiClient {
@@ -20,6 +30,34 @@ export class FewStepsAwayApiClient {
 		private readonly requestService: IRequestService,
 		private readonly baseUrl: string,
 	) { }
+
+	async createTask(accessToken: string, body: { prompt: string; organizationId?: string }): Promise<AgentTaskResponse> {
+		return this.postJson<AgentTaskResponse>('/ai/agents/tasks', body, {
+			'Authorization': `Bearer ${accessToken}`,
+		});
+	}
+
+	async getTask(accessToken: string, taskId: string): Promise<AgentTaskResponse> {
+		return this.getJson<AgentTaskResponse>(`/ai/agents/tasks/${encodeURIComponent(taskId)}`, accessToken);
+	}
+
+	async cancelTask(accessToken: string, taskId: string): Promise<AgentTaskResponse> {
+		return this.postJson<AgentTaskResponse>(`/ai/agents/tasks/${encodeURIComponent(taskId)}/cancel`, undefined, {
+			'Authorization': `Bearer ${accessToken}`,
+		});
+	}
+
+	async queuePrReview(accessToken: string, body: {
+		prUrl: string;
+		repo: string;
+		organizationId: string;
+		diff?: string;
+		postToGitHub?: boolean;
+	}): Promise<{ task: AgentTaskResponse; queued: boolean }> {
+		return this.postJson('/ai/agents/pr-review', body, {
+			'Authorization': `Bearer ${accessToken}`,
+		});
+	}
 
 	async exchangeOAuthCode(
 		code: string,
@@ -50,6 +88,37 @@ export class FewStepsAwayApiClient {
 			'Authorization': `Bearer ${accessToken}`,
 			'X-Refresh-Token': refreshToken,
 		});
+	}
+
+	async securityPreflight(accessToken: string, body: {
+		content: string;
+		organizationId?: string;
+		filePath?: string;
+		model?: string;
+	}): Promise<{ allowed: boolean; redacted?: string; policy?: { allowed: boolean; violations: string[] } }> {
+		return this.postJson('/security/preflight', body, {
+			'Authorization': `Bearer ${accessToken}`,
+		});
+	}
+
+	async logAiAudit(accessToken: string, body: {
+		organizationId?: string;
+		suggestionType: string;
+		outcome: 'SHOWN' | 'ACCEPTED' | 'REJECTED' | 'MODIFIED';
+		model?: string;
+		promptLength?: number;
+		filePath?: string;
+	}): Promise<void> {
+		await this.postJson('/ai-audit', body, {
+			'Authorization': `Bearer ${accessToken}`,
+		});
+	}
+
+	async embedTexts(accessToken: string, texts: string[]): Promise<number[][]> {
+		const result = await this.postJson<{ embeddings: number[][] }>('/ai/embeddings', { texts }, {
+			'Authorization': `Bearer ${accessToken}`,
+		});
+		return result.embeddings;
 	}
 
 	private async postJson<T>(path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {

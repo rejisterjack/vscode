@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRequestService, asJson, isSuccess } from '../../../platform/request/common/request.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
+import { IRequestService } from '../../../platform/request/common/request.js';
 import { ITool, ToolResult } from '../toolTypes.js';
+import { fetchWebSearchResults } from './websearchUtils.js';
 
 /**
  * Search the web for a query. Port of
@@ -30,45 +31,10 @@ export class WebSearchTool implements ITool {
 	) { }
 
 	async execute(args: { query: string; maxResults?: number }): Promise<ToolResult> {
-		const maxResults = args.maxResults ?? 10;
-		// Use DuckDuckGo's instant answer API as a no-key fallback.
-		const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(args.query)}&format=json&no_html=1&skip_disambig=1`;
-		const requestContext = await this.requestService.request({
-			type: 'GET',
-			url,
-			headers: { 'Accept': 'application/json' }
-		}, CancellationToken.None);
-
-		if (!isSuccess(requestContext)) {
-			throw new Error(`Web search failed: HTTP ${requestContext.res.statusCode}`);
-		}
-
-		const data = await asJson<{
-			AbstractText?: string;
-			AbstractURL?: string;
-			Heading?: string;
-			RelatedTopics?: Array<{ Text?: string; FirstURL?: string }>;
-		}>(requestContext);
-
-		if (!data) {
-			throw new Error('Web search returned no data');
-		}
-
-		const results: string[] = [];
-		if (data.AbstractText) {
-			results.push(`# ${data.Heading ?? args.query}\n${data.AbstractText}\nURL: ${data.AbstractURL ?? ''}`);
-		}
-		if (data.RelatedTopics) {
-			for (const topic of data.RelatedTopics.slice(0, maxResults)) {
-				if (topic.Text && topic.FirstURL) {
-					results.push(`- ${topic.Text}\n  URL: ${topic.FirstURL}`);
-				}
-			}
-		}
-
+		const output = await fetchWebSearchResults(this.requestService, args.query, args.maxResults ?? 10, CancellationToken.None);
 		return {
 			title: `Search: ${args.query}`,
-			output: results.length ? results.join('\n\n') : '(no results)'
+			output,
 		};
 	}
 }

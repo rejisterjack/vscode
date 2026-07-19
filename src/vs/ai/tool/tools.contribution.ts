@@ -16,6 +16,8 @@ import { WebFetchTool } from './tools/webfetchTool.js';
 import { WebSearchTool } from './tools/websearchTool.js';
 import { TodoWriteTool } from './tools/todoTool.js';
 import { QuestionTool } from './tools/questionTool.js';
+import { ApplyPatchTool } from './tools/applyPatchTool.js';
+import { CodebaseSearchTool } from './tools/codebaseSearchTool.js';
 
 registerSingleton(IToolRegistry, ToolRegistry, InstantiationType.Delayed);
 
@@ -29,6 +31,7 @@ export function registerBuiltinTools(instantiationService: IInstantiationService
 		instantiationService.createInstance(ReadFileTool),
 		instantiationService.createInstance(WriteFileTool),
 		instantiationService.createInstance(EditFileTool),
+		instantiationService.createInstance(ApplyPatchTool),
 		instantiationService.createInstance(GlobTool),
 		instantiationService.createInstance(GrepTool),
 		instantiationService.createInstance(BashTool),
@@ -36,6 +39,7 @@ export function registerBuiltinTools(instantiationService: IInstantiationService
 		instantiationService.createInstance(WebSearchTool),
 		instantiationService.createInstance(TodoWriteTool),
 		instantiationService.createInstance(QuestionTool),
+		instantiationService.createInstance(CodebaseSearchTool),
 	];
 	for (const tool of tools) {
 		registry.register(tool);

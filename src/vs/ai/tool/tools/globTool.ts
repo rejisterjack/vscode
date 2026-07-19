@@ -5,9 +5,11 @@
 
 import { IFileService } from '../../../platform/files/common/files.js';
 import { IWorkspaceContextService } from '../../../platform/workspace/common/workspace.js';
-import { URI } from '../../../base/common/uri.js';
+import { IEditIntegrityService } from '../../integrity/editIntegrityService.js';
+import { resolveToolPath } from '../../integrity/workspacePathUtils.js';
 import { ITool, ToolResult } from '../toolTypes.js';
 import { parse as parseGlob } from '../../../base/common/glob.js';
+import { URI } from '../../../base/common/uri.js';
 
 /**
  * Fast file pattern matching using glob patterns. Port of
@@ -27,15 +29,12 @@ export class GlobTool implements ITool {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService
+		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
+		@IEditIntegrityService private readonly editIntegrity: IEditIntegrityService,
 	) { }
 
 	async execute(args: { pattern: string; path?: string }): Promise<ToolResult> {
-		const workspaceRoot = this.workspaceService.getWorkspace().folders[0]?.uri;
-		if (!workspaceRoot) {
-			throw new Error('No workspace folder open');
-		}
-		const baseUri = args.path ? URI.file(args.path) : workspaceRoot;
+		const baseUri = await resolveToolPath(this.editIntegrity, this.workspaceService, this.fileService, args.path);
 		const matches: string[] = [];
 		await this.collectMatches(baseUri, args.pattern, matches, 1000);
 		return {

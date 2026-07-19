@@ -13,7 +13,7 @@ import { AIMode } from '../../../../../ai/common/types/ai.types.js';
 import { IModeRegistry } from '../../../../../ai/mode/modeRegistry.js';
 import { FewStepsAwayChatViewId } from '../aiChatIds.js';
 
-const MODES: readonly AIMode[] = ['coding', 'ask', 'architect', 'debug', 'plan', 'learning'];
+const MODES: readonly AIMode[] = ['coding', 'ask', 'architect', 'debug', 'plan', 'learning', 'review'];
 
 function getModeLabel(mode: AIMode): string {
 	switch (mode) {
@@ -23,6 +23,7 @@ function getModeLabel(mode: AIMode): string {
 		case 'debug': return localize('fewstepsaway.mode.debug', "Debug");
 		case 'plan': return localize('fewstepsaway.mode.plan', "Plan");
 		case 'learning': return localize('fewstepsaway.mode.learning', "Learning");
+		case 'review': return localize('fewstepsaway.mode.review', "Review");
 	}
 }
 

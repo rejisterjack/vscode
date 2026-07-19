@@ -29,6 +29,17 @@ import { IModeRegistry } from './mode/modeRegistry.js';
 import { registerBuiltinModes } from './mode/modes.contribution.js';
 import { registerCodeActions } from './codeActions/codeActions.contribution.js';
 import { IAutocompleteServiceManager } from './suggestion/autocompleteServiceManager.js';
+import { IRateLimiterService, RateLimiter } from './common/rateLimiter.js';
+import { IIndexManager } from './indexing/indexTypes.js';
+import { IMcpToolBridge } from './mcp/mcpToolBridge.js';
+import './agent/agentPermission.contribution.js';
+import './agent/backgroundAgentService.js';
+import './scm/worktreeService.js';
+import './review/reviewFindingsService.js';
+import './integrity/editIntegrityService.js';
+import './integrity/workspaceTaskRunner.js';
+import './indexing/embeddingService.js';
+import './rules/rulesLoader.js';
 
 /**
  * Minimal AIService implementation.
@@ -41,7 +52,8 @@ export class AIService extends Disposable implements IAIService {
 
 	constructor(
 		@IProviderRegistry private readonly providerRegistry: IProviderRegistry,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IRateLimiterService private readonly rateLimiter: IRateLimiterService
 	) {
 		super();
 		this.ensureRegistered();
@@ -61,6 +73,12 @@ export class AIService extends Disposable implements IAIService {
 			registerBuiltinModes(modeRegistry);
 			registerCodeActions(this.instantiationService);
 			this.instantiationService.invokeFunction(accessor => accessor.get(IAutocompleteServiceManager)).ensureProviderRegistered();
+			// Warm MCP bridge and indexing services
+			this.instantiationService.invokeFunction(accessor => {
+				accessor.get(IMcpToolBridge).refresh();
+				const indexManager = accessor.get(IIndexManager);
+				void indexManager.indexWorkspace();
+			});
 		} catch (err) {
 			// Registration failures must not crash the workbench.
 			console.error('[AIService] Failed to register AI providers/tools/modes:', err);
@@ -81,9 +99,15 @@ export class AIService extends Disposable implements IAIService {
 		if (!provider) {
 			throw new Error('No active AI provider');
 		}
+		const tokenEstimate = this.estimateTokens(request.query ?? '');
+		if (!this.rateLimiter.canMakeRequest(provider.id, tokenEstimate)) {
+			const waitMs = this.rateLimiter.getTimeUntilNextRequest(provider.id);
+			throw new Error(`Rate limit exceeded. Retry in ${Math.ceil(waitMs / 1000)}s.`);
+		}
 		this._onWillSendRequest.fire(request);
 		try {
 			const response = await provider.sendRequest(request);
+			this.rateLimiter.recordRequest(provider.id, response.tokensUsed ?? tokenEstimate);
 			this._onDidReceiveResponse.fire({ request, response });
 			return response;
 		} catch (error) {
@@ -203,3 +227,4 @@ registerSingleton(IPromptEnhancementService, PromptEnhancementService, Instantia
 registerSingleton(ICommitMessageService, CommitMessageService, InstantiationType.Delayed);
 registerSingleton(IAgentLoop, AgentLoop, InstantiationType.Delayed);
 registerSingleton(IFewStepsAwayAuthService, FewStepsAwayAuthService, InstantiationType.Eager);
+registerSingleton(IRateLimiterService, RateLimiter, InstantiationType.Delayed);

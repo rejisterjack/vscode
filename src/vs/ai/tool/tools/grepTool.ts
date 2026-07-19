@@ -6,6 +6,9 @@
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { ISearchService, QueryType, ITextQuery } from '../../../workbench/services/search/common/search.js';
 import { IWorkspaceContextService } from '../../../platform/workspace/common/workspace.js';
+import { IFileService } from '../../../platform/files/common/files.js';
+import { IEditIntegrityService } from '../../integrity/editIntegrityService.js';
+import { resolveToolPath } from '../../integrity/workspacePathUtils.js';
 import { ITool, ToolResult } from '../toolTypes.js';
 
 /**
@@ -29,20 +32,31 @@ export class GrepTool implements ITool {
 
 	constructor(
 		@ISearchService private readonly searchService: ISearchService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService
+		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
+		@IEditIntegrityService private readonly editIntegrity: IEditIntegrityService,
+		@IFileService private readonly fileService: IFileService,
 	) { }
 
 	async execute(args: { pattern: string; path?: string; include?: string; outputMode?: 'content' | 'files_with_matches' }): Promise<ToolResult> {
-		const folder = this.workspaceService.getWorkspace().folders[0];
+		const searchRoot = await resolveToolPath(this.editIntegrity, this.workspaceService, this.fileService, args.path);
+		const folder = this.workspaceService.getWorkspace().folders.find(f =>
+			searchRoot.fsPath.startsWith(f.uri.fsPath)
+		) ?? this.workspaceService.getWorkspace().folders[0];
 		if (!folder) {
 			throw new Error('No workspace folder open');
 		}
 		const query: ITextQuery = {
 			contentPattern: { pattern: args.pattern, isRegExp: true, isCaseSensitive: false },
-			folderQueries: [{ folder: args.path ? folder.uri.with({ path: args.path }) : folder.uri }],
+			folderQueries: [{ folder: folder.uri }],
 			type: QueryType.Text,
 			maxResults: 200,
 		};
+		if (args.path && searchRoot.toString() !== folder.uri.toString()) {
+			const rel = searchRoot.path.replace(folder.uri.path, '').replace(/^\//, '');
+			if (rel) {
+				query.includePattern = { [`${rel}/**`]: true, [rel]: true };
+			}
+		}
 		if (args.include) {
 			query.includePattern = { [args.include]: true };
 		}

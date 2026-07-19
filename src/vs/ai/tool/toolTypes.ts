@@ -27,6 +27,22 @@ export interface ToolContext {
 	ask(prompt: string): Promise<boolean>;
 }
 
+export interface ToolValidationResult {
+	readonly ok: boolean;
+	readonly errorsBefore: number;
+	readonly errorsAfter: number;
+	readonly diagnostics: Array<{ line: number; message: string; severity: string }>;
+	readonly newDiagnostics?: Array<{ line: number; message: string; severity: string }>;
+}
+
+/** Original/modified content for chat-editing bridge and UI apply surfaces. */
+export interface ToolEditContent {
+	readonly filePath: string;
+	readonly original: string;
+	readonly modified: string;
+	readonly staged?: boolean;
+}
+
 /**
  * Result of executing a tool.
  *
@@ -39,6 +55,8 @@ export interface ToolResult {
 	readonly output: unknown;
 	/** Optional metadata for the UI. */
 	readonly metadata?: Record<string, unknown>;
+	/** Post-apply LSP validation (edit/write tools). */
+	readonly validation?: ToolValidationResult;
 }
 
 /**

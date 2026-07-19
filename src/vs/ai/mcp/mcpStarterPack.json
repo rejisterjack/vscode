@@ -1,0 +1,54 @@
+{
+	"version": 1,
+	"description": "Curated MCP servers for FewStepsAway starter setups",
+	"servers": [
+		{
+			"id": "context7",
+			"name": "Context7",
+			"description": "Up-to-date library documentation lookup",
+			"publisher": "upstash",
+			"command": "npx",
+			"args": ["-y", "@upstash/context7-mcp"]
+		},
+		{
+			"id": "filesystem",
+			"name": "Filesystem",
+			"description": "Read and write workspace files via MCP",
+			"publisher": "modelcontextprotocol",
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-filesystem"]
+		},
+		{
+			"id": "github",
+			"name": "GitHub",
+			"description": "Issues, PRs, and repository context",
+			"publisher": "modelcontextprotocol",
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-github"]
+		},
+		{
+			"id": "postgres",
+			"name": "PostgreSQL",
+			"description": "Query PostgreSQL databases",
+			"publisher": "modelcontextprotocol",
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-postgres"]
+		},
+		{
+			"id": "brave-search",
+			"name": "Brave Search",
+			"description": "Web search for live information",
+			"publisher": "modelcontextprotocol",
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-brave-search"]
+		},
+		{
+			"id": "sentry",
+			"name": "Sentry",
+			"description": "Error tracking and issue investigation",
+			"publisher": "sentry",
+			"command": "npx",
+			"args": ["-y", "@sentry/mcp-server"]
+		}
+	]
+}

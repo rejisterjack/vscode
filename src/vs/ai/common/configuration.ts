@@ -89,7 +89,7 @@ configurationRegistry.registerConfiguration({
 		},
 		'ai.backend.apiUrl': {
 			type: 'string',
-			default: 'http://localhost:7380/api/v1',
+			default: 'http://localhost:21000/api/v1',
 			description: localize('ai.backend.apiUrl', "FewStepsAway cloud API base URL (fewstepsapp backend).")
 		},
 		'ai.auth.oauth.clientId': {
@@ -130,6 +130,16 @@ configurationRegistry.registerConfiguration({
 			minimum: 0,
 			maximum: 50,
 			description: localize('ai.chat.maxContextFiles', "Maximum number of open files to include as context when sending a chat message.")
+		},
+		'ai.test.mockProvider.enabled': {
+			type: 'boolean',
+			default: false,
+			description: localize('ai.test.mockProvider.enabled', "Use the deterministic FewStepsAway test provider (for smoke/E2E).")
+		},
+		'ai.review.postToGitHub': {
+			type: 'boolean',
+			default: false,
+			description: localize('ai.review.postToGitHub', "Post review findings as GitHub PR comments when using cloud PR review.")
 		},
 		'ai.backend.spawnOnStartup': {
 			type: 'boolean',
@@ -392,6 +402,109 @@ configurationRegistry.registerConfiguration({
 			type: 'string',
 			default: '',
 			description: localize('ai.provider.baseten.apiKey', "Baseten API key.")
+		},
+
+		// --- Rate limiting ---
+		'ai.rateLimit.requestsPerMinute': {
+			type: 'number',
+			default: 60,
+			minimum: 1,
+			maximum: 1000,
+			description: localize('ai.rateLimit.requestsPerMinute', "Maximum AI requests per minute per provider.")
+		},
+		'ai.rateLimit.tokensPerMinute': {
+			type: 'number',
+			default: 200000,
+			minimum: 1000,
+			description: localize('ai.rateLimit.tokensPerMinute', "Maximum tokens per minute per provider.")
+		},
+
+		// --- Codebase indexing ---
+		'ai.indexing.enabled': {
+			type: 'boolean',
+			default: true,
+			description: localize('ai.indexing.enabled', "Enable local codebase indexing for @codebase search.")
+		},
+		'ai.indexing.maxFiles': {
+			type: 'number',
+			default: 10000,
+			minimum: 100,
+			maximum: 100000,
+			description: localize('ai.indexing.maxFiles', "Maximum files to index in the local workspace.")
+		},
+
+		// --- MCP integration ---
+		'ai.mcp.enabled': {
+			type: 'boolean',
+			default: true,
+			description: localize('ai.mcp.enabled', "Expose MCP server tools to the FewStepsAway agent.")
+		},
+		'ai.mcp.allowlist': {
+			type: 'array',
+			items: { type: 'string' },
+			default: [],
+			description: localize('ai.mcp.allowlist', "Allowed MCP tools (empty = all). Format: toolName or server/toolName.")
+		},
+		'ai.mcp.denylist': {
+			type: 'array',
+			items: { type: 'string' },
+			default: [],
+			description: localize('ai.mcp.denylist', "Denied MCP tools. Format: toolName or server/toolName.")
+		},
+
+		// --- Composer ---
+		'ai.composer.enabled': {
+			type: 'boolean',
+			default: true,
+			description: localize('ai.composer.enabled', "Enable multi-file Composer mode (Cmd+I).")
+		},
+
+		// --- Edit integrity ---
+		'ai.edit.validateAfterApply': {
+			type: 'boolean',
+			default: true,
+			description: localize('ai.edit.validateAfterApply', "Wait for LSP diagnostics after AI file edits and report new errors.")
+		},
+		'ai.edit.autoRevertOnNewErrors': {
+			type: 'boolean',
+			default: true,
+			description: localize('ai.edit.autoRevertOnNewErrors', "Automatically revert direct AI edits that introduce new errors (Composer-staged edits are not auto-reverted).")
+		},
+		'ai.edit.batchRevertOnFailure': {
+			type: 'boolean',
+			default: true,
+			description: localize('ai.edit.batchRevertOnFailure', "Revert all files in a multi-file apply_patch batch when any file fails validation.")
+		},
+		'ai.edit.autoFixMaxAttempts': {
+			type: 'number',
+			default: 2,
+			minimum: 0,
+			maximum: 10,
+			description: localize('ai.edit.autoFixMaxAttempts', "Max times the agent loop appends validation errors for the model to self-fix per session step.")
+		},
+		'ai.edit.diagnosticWaitMs': {
+			type: 'number',
+			default: 600,
+			minimum: 100,
+			maximum: 5000,
+			description: localize('ai.edit.diagnosticWaitMs', "Milliseconds to wait for LSP diagnostics after a file edit.")
+		},
+		'ai.edit.runTypecheckAfterBatch': {
+			type: 'boolean',
+			default: false,
+			description: localize('ai.edit.runTypecheckAfterBatch', "Run workspace typecheck after Composer accept-all (expensive).")
+		},
+
+		// --- Per-task model routing ---
+		'ai.chat.agentModel': {
+			type: 'string',
+			default: '',
+			description: localize('ai.chat.agentModel', "Model for agent/chat tasks. Leave empty to use ai.chat.model.")
+		},
+		'ai.completion.model': {
+			type: 'string',
+			default: '',
+			description: localize('ai.completion.model', "Model for Tab autocomplete. Leave empty to use provider default.")
 		}
 	}
 });

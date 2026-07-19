@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITextFileService } from '../../../workbench/services/textfile/common/textfiles.js';
-import { URI } from '../../../base/common/uri.js';
-import { ITool, ToolResult } from '../toolTypes.js';
+import { IConfigurationService } from '../../../platform/configuration/common/configuration.js';
+import { IComposerService } from '../../composer/composerTypes.js';
+import { IEditIntegrityService } from '../../integrity/editIntegrityService.js';
+import { ITool, ToolContext, ToolResult } from '../toolTypes.js';
+import { toToolValidationResult } from '../toolValidationUtils.js';
 
 /**
- * Write (create or overwrite) a file. Port of
- * `references/kilocode/packages/opencode/src/tool/write.ts`.
+ * Write (create or overwrite) a file with integrity validation.
  */
 export class WriteFileTool implements ITool {
 	readonly id = 'write';
@@ -24,15 +25,47 @@ export class WriteFileTool implements ITool {
 	};
 
 	constructor(
-		@ITextFileService private readonly textFileService: ITextFileService
+		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IComposerService private readonly composerService: IComposerService,
+		@IEditIntegrityService private readonly editIntegrity: IEditIntegrityService,
 	) { }
 
-	async execute(args: { filePath: string; content: string }): Promise<ToolResult> {
-		const uri = URI.file(args.filePath);
-		await this.textFileService.write(uri, args.content);
+	async execute(args: { filePath: string; content: string }, _ctx: ToolContext): Promise<ToolResult> {
+		const uri = await this.editIntegrity.resolveWorkspaceUriAsync(args.filePath);
+		let original = '';
+		try {
+			original = await this.editIntegrity.readFileContent(uri);
+		} catch {
+			original = '';
+		}
+
+		await this.editIntegrity.preApply(uri, args.content, original);
+
+		const composerEnabled = this.configurationService.getValue<boolean>('ai.composer.enabled');
+		const editMeta = { editContent: { filePath: args.filePath, original, modified: args.content } };
+		if (composerEnabled) {
+			this.composerService.stageEdit(uri, original, args.content);
+			return {
+				title: `Stage write ${args.filePath}`,
+				output: `Staged write for ${args.filePath} in Composer. Accept or reject in the Composer dock.`,
+				metadata: { ...editMeta, editContent: { ...editMeta.editContent, staged: true } },
+			};
+		}
+
+		const validation = await this.editIntegrity.safeWrite(uri, args.content, { composerStaged: false });
+
+		let output = `File written: ${args.filePath}`;
+		if (validation) {
+			output += ` Validation: errors ${validation.errorsBefore} → ${validation.errorsAfter}.`;
+			if (!validation.ok) {
+				output += ` Write was reverted due to new errors.`;
+			}
+		}
 		return {
 			title: `Write ${args.filePath}`,
-			output: `File written: ${args.filePath}`
+			output,
+			metadata: editMeta,
+			validation: validation ? toToolValidationResult(validation) : undefined,
 		};
 	}
 }
