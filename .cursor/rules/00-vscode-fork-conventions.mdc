@@ -1,0 +1,82 @@
+---
+description: Core VS Code fork conventions — isolation boundary, TypeScript/DI standards, file organization, naming
+alwaysApply: true
+---
+
+# VS Code Fork Conventions
+
+FewStepsAway is a fork of VS Code with a native AI integration layer, not a from-scratch app. Full context lives in `AGENTS.md` — this rule encodes its enforceable conventions.
+
+## Isolation boundary
+
+- **Minimize changes to core VS Code files.** Prefer extension points (services, contribution registries, commands, menus) over editing `src/vs/base`, `src/vs/editor`, `src/vs/workbench`, or `src/vs/platform` directly.
+- **Keep AI code isolated under `src/vs/ai/`.** New AI functionality (providers, context management, indexing, completion, chat, refactoring, debug assist, search, extension API) belongs in the relevant `src/vs/ai/*` subfolder, not scattered into core modules.
+- **Document any VS Code core modification** you do make — a short comment or a note in the PR description explaining why an extension point wasn't sufficient.
+
+## TypeScript conventions
+
+- **Strict types, no `any`.** Type function signatures fully (params and return type). If a type is genuinely unknown, use `unknown` and narrow it — never `any`.
+- **Interfaces are prefixed `I`** (e.g. `IAIProvider`, `IContextManager`); **classes are not** (e.g. `OpenAIProvider implements IAIProvider`).
+- **Dependency injection via VS Code's DI system.** Constructor-inject services with the `@IServiceName` decorator pattern, not manual instantiation or singletons reached for directly:
+
+```typescript
+export class ChatService implements IChatService {
+    constructor(
+        @IAIService private readonly aiService: IAIService,
+        @IContextManager private readonly contextManager: IContextManager,
+        @ILogService private readonly logService: ILogService
+    ) { }
+}
+```
+
+- **`Disposable` + `_register()` for cleanup.** Any class holding listeners, emitters, or other disposables extends `Disposable` and registers them via `this._register(...)` so they're torn down automatically:
+
+```typescript
+export class ContextManager extends Disposable implements IContextManager {
+    private readonly _onContextChanged = this._register(new Emitter<ContextChange>());
+
+    registerListeners(): void {
+        this._register(this.editorService.onDidChange(() => this.handleChange()));
+    }
+}
+```
+
+- **`Emitter`/`Event` pattern for events**, not raw Node `EventEmitter` or ad-hoc callback props:
+
+```typescript
+export class MyService {
+    private readonly _onEvent = new Emitter<MyEventType>();
+    readonly onEvent: Event<MyEventType> = this._onEvent.event;
+
+    triggerEvent(): void {
+        this._onEvent.fire({ /* data */ });
+    }
+}
+```
+
+## File organization
+
+- **One class/interface per file**, generally.
+- **Group related files in folders**, exported through a barrel `index.ts`:
+
+```typescript
+// src/vs/ai/provider/common/index.ts
+export * from './aiProvider';
+export * from './providerRegistry';
+export * from './rateLimiter';
+```
+
+## Naming conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Interfaces | `IPascalCase` | `IAIProvider` |
+| Classes | `PascalCase` | `OpenAIProvider` |
+| Methods/Variables | `camelCase` | `sendRequest` |
+| Constants | `UPPER_SNAKE_CASE` | `MAX_CONTEXT_TOKENS` |
+| Enums | `PascalCase` | `AIMode` |
+| Type aliases | `PascalCase` | `AIRequestContext` |
+
+## Docs-first policy (mandatory)
+
+Before modifying a core VS Code subsystem, or wiring a new contribution point (commands, keybindings, settings, menus), check the official VS Code extension/contribution API docs or an existing analogous pattern already in `src/vs/` — do not guess at undocumented internals of the upstream codebase. VS Code's internals change across upstream merges; a pattern that worked in an older VS Code version may no longer be the recommended one. If official docs are unavailable or ambiguous, say so explicitly rather than guessing silently.

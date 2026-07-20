@@ -1,0 +1,59 @@
+---
+description: Token-budgeted context gathering and general AI-feature performance/privacy guidance
+globs: src/vs/ai/context/**
+alwaysApply: false
+---
+
+# Context Building & Token Budgets
+
+Applies to `src/vs/ai/context/` — context gathering, prioritization, and anything that assembles text to send to an AI provider.
+
+## Token-budgeted `gatherContext()`
+
+Context gathering is bounded by a `MAX_TOKENS` budget: keep adding context (current file, then open files, in priority order) until the next item would exceed the budget, then stop — never gather unbounded context and truncate at the provider call site.
+
+```typescript
+export class ContextManager {
+    private readonly MAX_TOKENS = 4000;
+
+    async gatherContext(options: ContextOptions = {}): Promise<CodeContext> {
+        const currentFile = await this.getCurrentFileContext();
+        let tokensUsed = this.estimateTokens(currentFile?.content || '');
+
+        const openFiles: FileContext[] = [];
+
+        for (const file of this.getOpenFiles()) {
+            const fileTokens = this.estimateTokens(file.content);
+            if (tokensUsed + fileTokens > this.MAX_TOKENS) {
+                break;
+            }
+            openFiles.push(file);
+            tokensUsed += fileTokens;
+        }
+
+        return { currentFile, openFiles };
+    }
+
+    private estimateTokens(text: string): number {
+        // Rough estimation: 1 token ≈ 4 characters
+        return Math.ceil(text.length / 4);
+    }
+}
+```
+
+- Highest-priority context (current file / active selection) is added first, before opportunistically filling remaining budget with less-critical context (other open files, project structure, git diff).
+- The `Math.ceil(text.length / 4)` heuristic is intentionally rough — don't replace it with an expensive real tokenizer call in a hot path (e.g. inline completions) unless profiling shows the cheap estimate is actually causing budget overruns.
+
+## Performance
+
+- **Lazy-load AI components** — don't initialize providers, indexes, or context managers until a feature that needs them is actually invoked.
+- **Cache AI responses** where the request is deterministic/repeatable — avoid redundant provider calls for the same context+query.
+- **Debounce rapid requests**, especially inline completions triggered on every keystroke — batch/coalesce before hitting a provider.
+- **Respect token limits** end-to-end — a context manager that respects `MAX_TOKENS` is undermined if a caller bypasses it and concatenates extra text before sending.
+
+## Privacy & security
+
+- **Never log API keys** — not in console output, error messages, or telemetry.
+- **Filter PII before sending to AI providers** — code comments, commit messages, and file contents can carry names/emails/secrets; strip or redact before context leaves the process boundary.
+- **Support local-only mode** — context-gathering and provider selection must degrade gracefully when the user has configured a local model and no data should leave the machine.
+- **Encrypt sensitive storage** — cached context, conversation history, and API keys at rest use the editor's secret storage, not plain settings files.

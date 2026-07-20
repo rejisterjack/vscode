@@ -1,0 +1,104 @@
+---
+description: IAIProvider contract, registration, configuration, and error handling for AI provider implementations
+globs: src/vs/ai/provider/**
+alwaysApply: false
+---
+
+# AI Provider Implementation
+
+Applies to anything under `src/vs/ai/provider/` — new providers, provider registry changes, and provider error handling.
+
+## The `IAIProvider` contract
+
+Every provider must implement `IAIProvider` with these required fields and methods:
+
+```typescript
+export class MyProvider implements IAIProvider {
+    readonly id = 'myprovider';
+    readonly name = 'My Provider';
+    readonly capabilities: ProviderCapabilities = {
+        supportsStreaming: true,
+        supportsSystemMessages: true,
+        supportsFunctionCalling: false,
+        maxContextLength: 128000,
+        supportedModes: ['coding', 'architect', 'debug', 'learning']
+    };
+
+    async initialize(config: ProviderConfig): Promise<void> { }
+    async sendRequest(context: AIRequestContext): Promise<AIResponse> { }
+    async *streamRequest(context: AIRequestContext): AsyncIterable<AIResponseChunk> { }
+}
+```
+
+- `capabilities` must accurately declare `supportsStreaming`, `supportsSystemMessages`, `supportsFunctionCalling`, `maxContextLength`, and `supportedModes` — the rest of the AI layer (mode gating, streaming UI, function-calling dispatch) branches on these, so an inaccurate flag causes silent feature breakage rather than a type error.
+- `initialize` must not throw for missing optional config; validate required config and fail with an `AIProviderError`, not a bare `Error`.
+
+## Registration
+
+Register the provider instance in `ProviderRegistry` — don't let callers `new` a provider directly:
+
+```typescript
+// In providerRegistry.ts
+registry.register('myprovider', new MyProvider());
+```
+
+## Configuration schema contribution
+
+Every provider needs its own namespaced settings under `ai.provider.<name>.*` added in `configuration.ts`:
+
+```typescript
+// In configuration.ts
+'ai.provider.myprovider.apiKey': {
+    type: 'string',
+    default: '',
+    description: 'My Provider API Key'
+}
+```
+
+Never log or persist the raw API key value outside this settings storage path — see the privacy rules in `30-context-and-token-budgets.mdc`.
+
+## Error hierarchy
+
+Providers throw a typed error, not a bare `Error`, so callers can branch on retryability:
+
+```typescript
+export class AIProviderError extends Error {
+    constructor(
+        message: string,
+        public readonly provider: string,
+        public readonly code: string,
+        public readonly retryable: boolean = false
+    ) {
+        super(message);
+    }
+}
+
+export class AIRateLimitError extends AIProviderError {
+    constructor(provider: string, public readonly retryAfter: number) {
+        super('Rate limit exceeded', provider, 'RATE_LIMIT', true);
+    }
+}
+```
+
+Any new provider-specific error subclasses `AIProviderError` and sets `retryable` correctly rather than introducing a parallel error shape.
+
+## Retry-with-backoff usage pattern
+
+Callers (and the provider's own internal retry wrapper, where applicable) should retry only on `retryable` errors, honoring `retryAfter`:
+
+```typescript
+async function sendWithRetry(context: AIRequestContext): Promise<AIResponse> {
+    try {
+        return await provider.sendRequest(context);
+    } catch (error) {
+        if (error instanceof AIRateLimitError && error.retryable) {
+            await delay(error.retryAfter * 1000);
+            return sendWithRetry(context);
+        }
+        throw error;
+    }
+}
+```
+
+- Always have a fallback/exit path (max retry count or a fallback provider) — never retry unconditionally on every `AIProviderError`, only on ones explicitly marked `retryable`.
+- Non-retryable errors (auth failure, invalid request) must propagate immediately with a meaningful message — don't swallow them into a generic failure.

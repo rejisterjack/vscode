@@ -1,0 +1,97 @@
+---
+description: Test file naming/location, mock-provider pattern, and required test/lint commands
+alwaysApply: true
+---
+
+# Testing
+
+## Unit tests
+
+- Named `{module}.test.ts` and **colocated** next to the module under test — e.g. `src/vs/ai/provider/openai/openaiProvider.test.ts` sits beside `openaiProvider.ts`, not in a separate top-level `test/` mirror.
+- Use `describe`/`it`/`beforeEach` with Arrange/Act/Assert comments for non-trivial cases:
+
+```typescript
+// src/vs/ai/provider/openai/openaiProvider.test.ts
+describe('OpenAIProvider', () => {
+    let provider: OpenAIProvider;
+
+    beforeEach(() => {
+        provider = new OpenAIProvider();
+    });
+
+    describe('sendRequest', () => {
+        it('should return valid AIResponse on success', async () => {
+            const mockClient = createMockOpenAI();
+            (provider as any).client = mockClient;
+
+            const result = await provider.sendRequest({ query: 'test', mode: 'coding' });
+
+            expect(result.content).toBeDefined();
+            expect(result.tokensUsed).toBeGreaterThan(0);
+            expect(result.provider).toBe('openai');
+        });
+
+        it('should throw AIProviderError on API failure', async () => {
+            const mockClient = createMockOpenAI();
+            mockClient.chat.completions.create.mockRejectedValue(new Error('API Error'));
+            (provider as any).client = mockClient;
+
+            await expect(provider.sendRequest({ query: 'test', mode: 'coding' }))
+                .rejects.toThrow(AIProviderError);
+        });
+    });
+});
+```
+
+## Mocking AI providers
+
+Use a shared mock-provider factory rather than hand-rolling ad-hoc mocks per test file, so every test exercises the full `IAIProvider` shape:
+
+```typescript
+export function createMockAIProvider(): IAIProvider {
+    return {
+        id: 'mock',
+        name: 'Mock Provider',
+        capabilities: {
+            supportsStreaming: true,
+            supportsSystemMessages: true,
+            supportsFunctionCalling: true,
+            maxContextLength: 128000,
+            supportedModes: ['coding', 'architect', 'debug', 'learning']
+        },
+        initialize: jest.fn(),
+        sendRequest: jest.fn().mockResolvedValue({
+            content: 'Mock response',
+            tokensUsed: 100,
+            provider: 'mock',
+            model: 'mock-model',
+            latency: 50,
+            finishReason: 'stop'
+        }),
+        streamRequest: jest.fn().mockImplementation(async function* () {
+            yield { content: 'Mock ', isComplete: false };
+            yield { content: 'response', isComplete: true };
+        }),
+        getAvailableModels: jest.fn().mockResolvedValue(['mock-model']),
+        validateConfig: jest.fn().mockResolvedValue(true),
+        shutdown: jest.fn()
+    };
+}
+```
+
+## Integration tests
+
+- Live under `src/vs/ai/test/integration/` (e.g. `src/vs/ai/test/integration/chatService.test.ts`), exercising real service wiring (`app.get(IChatService)`, `app.get(IAIService)`) rather than mocking every collaborator.
+- Cover full flows end-to-end (e.g. create conversation → send message → verify persisted message history), not just a single method call.
+
+## Running tests
+
+- `npm run test-node` — Mocha-based general unit tests (`test/unit/node`). Run for changes touching core/platform/workbench code.
+- `bun test src/vs/ai/**/*.test.ts src/vs/ai/tool/tools/*.test.ts` — the AI-module-specific suite (mirrors the `test-ai` package.json script). Run this for any change under `src/vs/ai/`.
+- `npm run test-browser` — browser-context tests (`test/unit/browser`), for code that depends on a DOM/browser environment.
+
+## Before considering a change done
+
+- Never commit `.only` or `.skip` — either disables coverage silently on `main`.
+- Cover edge/error states (provider failure, rate limit, empty context), not just the happy path.
+- **Run `npm run eslint`** and fix any reported issues — a change is not done until lint passes, in addition to the relevant test command(s) above.
