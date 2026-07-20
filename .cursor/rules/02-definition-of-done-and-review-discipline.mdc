@@ -1,0 +1,45 @@
+---
+description: Behavioral rule — how to evaluate "review" / "final review" / "in-depth review" requests without falling into an endless development loop. Establishes the definition of done and the Blocking-vs-Optional finding classification.
+alwaysApply: true
+---
+
+# Definition of done & review discipline
+
+This rule exists to counteract a known LLM failure mode: when asked to "review" or "do a final review" of an already-implemented feature, the model tends to manufacture new "must-fix" items just to appear thorough — pushing the user into an endless development loop where the feature is never declared complete. The goal is **calibration**, not false reassurance: genuine problems still get reported and fixed; speculative nice-to-haves do not get dressed up as blockers.
+
+## Before evaluating any review request
+
+1. **Re-establish the original planned scope first.** Look at: the conversation's plan/todos, any design docs, the implementation plan (`docs/IMPLEMENTATION_PLAN.md`), and the user's explicit requirements in the thread. If the scope is genuinely unclear after this, **stop and ask the user** what the planned scope was. Do not silently assume a broader scope.
+2. **Evaluate strictly against that scope** and the testing bar in `20-testing.mdc` — not an unbounded "best possible" standard. A feature that meets its planned scope and passes its tests is done, even if a different/bigger design would have been "nicer."
+
+## Classify every finding as Blocking or Optional
+
+- **Blocking** = real bugs, unmet spec requirements, unhandled edge cases that were part of the original ask, security risks, or anything that causes the existing tests to fail. These must be fixed before declaring done.
+- **Optional / future** = anything outside the original scope, style nits, speculative enhancements, "we could also add…", refactorings that aren't required for correctness, and performance/UX improvements that weren't in the spec. These get **listed separately, clearly labeled as optional**, and are **not implemented** unless the user explicitly asks for a new feature or enhancement.
+
+## The verdict
+
+If nothing Blocking is found, **say so plainly**: "This feature is complete — it matches the planned scope and passes the testing bar." Do not invent new must-fix items to appear thorough. Do not bury the completion verdict under a pile of optional suggestions.
+
+If Blocking items are found, list them clearly and fix them. Then re-evaluate.
+
+## What this rule does NOT do
+
+- It does **not** suppress honest bug-finding. A genuine bug, even one the user didn't explicitly ask about, is still Blocking if it breaks the feature or causes incorrect behavior.
+- It does **not** forbid suggestions. Optional items are welcome — but they must be clearly labeled as optional and not auto-implemented.
+- It does **not** lower the testing bar. The `20-testing.mdc` expectations still apply.
+
+## Trigger phrases
+
+When the user says any of: "review", "final review", "in-depth review", "is this done?", "anything left?", "ready to merge?" — apply this rule. Use the `feature-completion-review` skill for the step-by-step procedure.
+
+## Anti-pattern (do not do this)
+
+> User: "Do a final review of the X feature."
+> Assistant: "I reviewed X. Here are 12 things we should add: 1) add telemetry, 2) add a retry button, 3) refactor the service layer, 4) add a settings panel, 5) …"
+
+If X was planned as "add an AI provider for Anthropic," and it does that and passes its tests, the correct response is: "X is complete — it adds the Anthropic provider, passes the unit tests, and follows the existing provider interface. I found no blocking issues. Optional future enhancements I'd suggest (only if you want them): [short list]."
+
+## Important
+
+This rule does **not** suppress honest bug-finding. A genuine bug — even one the user didn't explicitly ask about — is still Blocking if it breaks the feature or causes incorrect behavior. The rule is about **calibration**: report real problems, don't manufacture them.
