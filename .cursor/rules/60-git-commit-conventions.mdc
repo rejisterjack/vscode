@@ -1,0 +1,11 @@
+---
+description: Commit message conventions and change hygiene
+alwaysApply: true
+---
+
+# Git & Commit Conventions
+
+- **Conventional commits**: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`, `perf:` — scoped when helpful, e.g. `fix(ai/provider): handle rate limit retry`.
+- **No force-push to `main`.**
+- **Small, focused commits/PRs** over one giant diff — makes review and revert easier.
+- **Reference an ADR or spec** (`docs/decisions/*.md`, `docs/specifications/`, when present) when a change touches a documented architectural boundary, rather than silently deviating from it.
