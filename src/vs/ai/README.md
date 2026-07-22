@@ -18,26 +18,32 @@ The AI module provides native AI capabilities deeply integrated into the editor:
 
 ```
 src/vs/ai/
-├── common/              # Shared types and utilities
-│   ├── types/          # TypeScript type definitions
-│   └── utils/          # Helper utilities
-├── provider/           # AI provider implementations
-│   ├── common/         # Base provider interfaces
-│   ├── openai/         # OpenAI integration
-│   ├── anthropic/      # Anthropic integration
-│   ├── google/         # Google Gemini integration
-│   ├── aws/            # AWS Bedrock integration
-│   ├── openrouter/     # OpenRouter integration
-│   └── local/          # Local model support (Ollama, LM Studio)
-├── context/            # Context management
-├── completion/         # Inline completion (ghost text)
-├── chat/               # Chat interface
-├── refactoring/        # Code refactoring
-├── indexing/           # Codebase indexing
-├── debug/              # AI debugging assistant
-├── search/             # Semantic search
-└── extension-api/      # Extension API
+├── common/              # Types, configuration, rate limiting
+├── provider/            # Multi-provider implementations + protocols
+├── context/             # Context manager
+├── suggestion/          # Inline completion + next-edit
+├── chat/                # Chat UI services + streaming
+├── agent/               # Agent loop, permissions, background agent
+├── mode/                # Ask/plan/debug mode prompts
+├── tool/                # Agent tools (read, write, grep, bash, …)
+├── mcp/                 # MCP tool bridge
+├── composer/            # Multi-file composer + multi-hunk edits
+├── indexing/            # Embeddings + semantic/hybrid search
+├── auth/                # FewStepsAway platform PKCE auth
+├── backend/             # Platform API client + SSE
+├── review/              # AI review findings
+├── scm/                 # Commit message generation
+├── integrity/           # Edit integrity + workspace tasks
+├── debt/                # Technical debt signals (types)
+├── enhance/             # Prompt enhancement
+├── rules/               # Project rules loader
+├── onboarding/          # Onboarding types
+├── extension-api/       # Third-party AI extension API
+├── electron-main/       # Main-process AI server channel
+└── ai.contribution.ts   # Module entry contribution
 ```
+
+Legacy README sections (refactoring/, debug/, search/ as top-level) may be folded into agent/tool modules — trust the tree above over older diagrams.
 
 ## Quick Start
 

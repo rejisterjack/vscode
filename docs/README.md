@@ -10,24 +10,38 @@ Open-source AI-native code editor (VS Code fork). Day-to-day agent conventions: 
 
 ## Start here
 
-1. **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)** — phased roadmap and feature plan.
-2. **[../AGENTS.md](../AGENTS.md)** — build/run conventions and AI isolation boundary.
-3. **[architecture/](./architecture/)** — system architecture.
-4. **[specifications/](./specifications/)** — technical specifications.
-5. **[status/feature-status.md](./status/feature-status.md)** — completion ledger.
+1. **[VISION.md](./VISION.md)** — product narrative and Phase 1 scope.
+2. **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)** — detailed phased plan (historical + future).
+3. **[../AGENTS.md](../AGENTS.md)** — build/run conventions and AI isolation boundary (`src/vs/ai/`).
+4. **[specifications/features/](./specifications/features/)** — P0 feature specs with acceptance criteria.
+5. **[status/feature-status.md](./status/feature-status.md)** — honest completion ledger.
 
-**Agents:** keep these docs truthful while building — see `.cursor/rules/03-product-docs-maintenance.mdc` (read the plan/specs before implementing; update docs when behavior changes; append `docs/status/feature-status.md` on complete). Keep AI code under `src/vs/ai/`.
+**Platform** (auth, billing, audit): sibling repo [fewstepsapp](../fewstepsapp/docs/README.md).
+
+**Agents:** keep these docs truthful — `.cursor/rules/03-product-docs-maintenance.mdc`. Update specs when behavior changes; append `feature-status.md` on complete.
 
 ## Categories
 
 | Path | Description |
 |------|-------------|
+| [VISION.md](./VISION.md) | North-star vision |
+| [business/prd.md](./business/prd.md) | IDE Phase 1 PRD |
 | [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) | Full implementation plan |
 | [architecture/](./architecture/) | System architecture |
-| [specifications/](./specifications/) | Technical specifications |
+| [specifications/features/](./specifications/features/) | Shipped feature specs |
+| [specifications/technical-specifications.md](./specifications/technical-specifications.md) | High-level technical spec |
 | [api/](./api/) | API documentation |
 | [database/](./database/) | Data schemas |
 | [infrastructure/](./infrastructure/) | Infra requirements |
 | [roadmap/](./roadmap/) | Roadmap artifacts |
+| [ecosystem/](./ecosystem/) | Multi-client ecosystem |
+| [operations/build-and-release.md](./operations/build-and-release.md) | Build, test, release |
 | [status/](./status/) | Feature status ledger |
-| [risk/](./risk/) | Risk notes |
+
+## Production launch status (Jul 2026)
+
+| Layer | Status |
+|-------|--------|
+| `src/vs/ai/` P0 features | Engineering shipped — see feature specs |
+| Product / pilot gate | **Not complete** — requires platform + enterprise pilots |
+| Desktop release channel | Confirm with maintainers — no EAS config in repo |

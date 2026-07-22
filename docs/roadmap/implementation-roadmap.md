@@ -1,6 +1,8 @@
 # Implementation Roadmap
 
-## Phase 1: Foundation (Months 1–3)
+> **Jul 2026 status:** Phases 1–3 below are largely **implemented in `src/vs/ai/`** (providers, completion, chat/agent, indexing, tools, MCP, composer). Phase 4 ecosystem items remain planned. See [feature-status.md](../status/feature-status.md) and [specifications/features/](../specifications/features/).
+
+## Phase 1: Foundation (Months 1–3) — ✅ Shipped (engineering)
 
 ### Objectives
 - Establish the baseline for the AI integration layer.
@@ -20,7 +22,7 @@
 - Single-provider selection screen.
 - Preliminary performance benchmarks.
 
-## Phase 2: Core Features (Months 4–6)
+## Phase 2: Core Features (Months 4–6) — ✅ Shipped (engineering)
 
 ### Objectives
 - Expand to multiple provider support (Anthropic, Google, AWS).
@@ -42,7 +44,7 @@
 - Context-based suggestions.
 - Preliminary local model support.
 
-## Phase 3: Advanced Features (Months 7–9)
+## Phase 3: Advanced Features (Months 7–9) — ✅ Mostly shipped (engineering)
 
 ### Objectives
 - Launch semantic code search with ranking.
