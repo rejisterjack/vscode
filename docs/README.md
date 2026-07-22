@@ -8,6 +8,21 @@ last_updated: "2026-07-22"
 
 Open-source AI-native code editor (VS Code fork). Day-to-day agent conventions: [AGENTS.md](../AGENTS.md).
 
+
+## Authority chain (one source of truth per layer)
+
+| Layer | Document | Use when |
+|-------|----------|----------|
+| Narrative | [VISION.md](./VISION.md) | IDE product thesis |
+| Implementation companion | [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) | Phased plan vs shipped `src/vs/ai/` |
+| Requirements | [business/prd.md](./business/prd.md) | IDE Phase 1 PRD |
+| Feature specs | [specifications/features/*.md](./specifications/features/) | Shipped AI features |
+| Sequencing | [ROADMAP.md](./ROADMAP.md) · [roadmap/implementation-roadmap.md](./roadmap/implementation-roadmap.md) | Phase gates |
+| Ship status | [status/feature-status.md](./status/feature-status.md) | Completion ledger |
+| AI isolation ADR | [decisions/0001-ai-layer-isolation-and-multi-provider.md](./decisions/0001-ai-layer-isolation-and-multi-provider.md) | `src/vs/ai/` boundary |
+| Platform sibling | [fewstepsapp docs](../fewstepsapp/docs/README.md) | Auth, billing, API |
+
+---
 ## Start here
 
 Shared monorepo docs layout, with IDE-specific north-star companion:
@@ -48,11 +63,18 @@ Shared monorepo docs layout, with IDE-specific north-star companion:
 | Path | Description |
 |------|-------------|
 | [architecture/system-architecture.md](./architecture/system-architecture.md) | System architecture (detail) |
-| [specifications/features/](./specifications/features/) | Shipped feature specs |
+| [specifications/features/](./specifications/features/) | Shipped feature specs ([index](./specifications/features/README.md)) |
+| [AI providers](specifications/features/ai-providers.md) | Multi-provider layer |
+| [Chat & agent modes](specifications/features/chat-agent-modes.md) | Chat UI and modes |
+| [Codebase indexing](specifications/features/codebase-indexing.md) | Semantic index |
+| [Inline completion](specifications/features/inline-completion.md) | Inline suggestions |
+| [Platform auth](specifications/features/platform-auth.md) | Platform session handoff |
 | [specifications/technical-specifications.md](./specifications/technical-specifications.md) | High-level technical spec |
-| [api/](./api/) | API documentation |
-| [database/](./database/) | Data schemas |
-| [infrastructure/](./infrastructure/) | Infra requirements |
+| [api/api-specifications.md](./api/api-specifications.md) | API specifications |
+| [database/schemas.md](./database/schemas.md) | Data schemas |
+| [infrastructure/infrastructure-requirements.md](./infrastructure/infrastructure-requirements.md) | Infra requirements |
+| [risk/risk-assessment.md](./risk/risk-assessment.md) | Risk assessment |
+| [superpowers/specs/2026-06-21-app-icon-design.md](./superpowers/specs/2026-06-21-app-icon-design.md) | App icon design spec |
 | [roadmap/implementation-roadmap.md](./roadmap/implementation-roadmap.md) | Phased roadmap (detail) |
 | [ecosystem/ECOSYSTEM.md](./ecosystem/ECOSYSTEM.md) | Multi-client ecosystem |
 

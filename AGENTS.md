@@ -12,6 +12,17 @@
 | Architecture | [docs/architecture/](docs/architecture/) |
 | Completion ledger | [docs/status/feature-status.md](docs/status/feature-status.md) |
 
+**Reading order for orientation** (matches [docs/README.md](docs/README.md) Start here):
+
+1. [docs/VISION.md](docs/VISION.md) — IDE narrative
+2. [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) — phased plan companion
+3. [docs/business/prd.md](docs/business/prd.md) — IDE Phase 1 PRD
+4. [docs/specifications/features/](docs/specifications/features/) — shipped AI feature specs
+5. [docs/status/feature-status.md](docs/status/feature-status.md) — completion ledger
+6. [docs/ROADMAP.md](docs/ROADMAP.md) — phase hub
+
+**Then:** this file (AGENTS.md) · [docs/decisions/0001-ai-layer-isolation-and-multi-provider.md](docs/decisions/0001-ai-layer-isolation-and-multi-provider.md) · [docs/operations/build-and-release.md](docs/operations/build-and-release.md)
+
 **Cursor agents:** product-docs-first and ongoing maintenance are enforced by `.cursor/rules/03-product-docs-maintenance.mdc` (always on), plus product-docs exceptions in `00-vscode-fork-conventions.mdc` and completion checks in `02-definition-of-done-and-review-discipline.mdc` / the `feature-completion-review` skill. Before coding a feature, read the relevant IMPLEMENTATION_PLAN section (and any matching specification). When shipping behavior changes, update those docs; when declaring complete, append to `feature-status.md`. Keep AI code under `src/vs/ai/`.
 
 ## Project Overview
