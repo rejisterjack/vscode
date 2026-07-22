@@ -1,5 +1,19 @@
 # FewStepsAway - AI Coding Agent Instructions
 
+## Product documentation
+
+**FewStepsAway** is an open-source, AI-native code editor (VS Code fork). Product scope and phases live in the docs tree — agents must keep those docs truthful while building.
+
+| Start here | Path |
+|------------|------|
+| Docs index | [docs/README.md](docs/README.md) |
+| Implementation plan | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) |
+| Specifications | [docs/specifications/](docs/specifications/) |
+| Architecture | [docs/architecture/](docs/architecture/) |
+| Completion ledger | [docs/status/feature-status.md](docs/status/feature-status.md) |
+
+**Cursor agents:** product-docs-first and ongoing maintenance are enforced by `.cursor/rules/03-product-docs-maintenance.mdc` (always on), plus product-docs exceptions in `00-vscode-fork-conventions.mdc` and completion checks in `02-definition-of-done-and-review-discipline.mdc` / the `feature-completion-review` skill. Before coding a feature, read the relevant IMPLEMENTATION_PLAN section (and any matching specification). When shipping behavior changes, update those docs; when declaring complete, append to `feature-status.md`. Keep AI code under `src/vs/ai/`.
+
 ## Project Overview
 
 **FewStepsAway** is an open-source, AI-native code editor built by forking VS Code and embedding AI capabilities natively. The goal is to create an editor where AI is woven into every interaction, not bolted on as an afterthought.

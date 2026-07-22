@@ -17,12 +17,13 @@ Do NOT use this skill for ongoing implementation work — if the feature is stil
 
 1. **Recover the original scope.** Find and re-read:
    - The conversation's plan/todos.
-   - The implementation plan (`docs/IMPLEMENTATION_PLAN.md`) and any design specs in `docs/`.
+   - The implementation plan (`docs/IMPLEMENTATION_PLAN.md`) and any matching docs in `docs/specifications/`, `docs/architecture/`, or `docs/api/`.
+   - `docs/status/feature-status.md`.
    - The user's explicit requirements in the conversation thread.
 
-   If the scope is genuinely unclear after this, **stop and ask the user** what the planned scope was. Do not silently assume a broader scope.
+   If the scope is genuinely unclear after this, **stop and ask the user** what the planned scope was. Do not silently assume a broader scope or a later IMPLEMENTATION_PLAN phase.
 
-2. **Run the relevant verification steps** for this repo: type-check (`npm run compile` or the repo's compile script), lint (`npm run eslint`), and the relevant tests (`npm run test-node` / `npm run test-ai` per `20-testing.mdc`). Skip steps that don't apply to the feature's surface area.
+2. **Run the relevant verification steps** for this repo: type-check (`npm run compile` or the repo's compile script), lint (`npm run eslint`), and the relevant tests (`npm run test-node` / `npm run test-ai` / `bun test src/vs/ai/**/*.test.ts` per `20-testing.mdc`). Skip steps that don't apply to the feature's surface area.
 
 3. **Check edge cases against the testing expectations** in `20-testing.mdc`:
    - Unit tests cover the core logic branches?
@@ -30,15 +31,20 @@ Do NOT use this skill for ongoing implementation work — if the feature is stil
 
    Missing tests for scenarios that were **part of the original ask** = Blocking. Missing tests for scenarios that were **not** part of the original ask = Optional.
 
-4. **Classify every finding as Blocking or Optional:**
-   - **Blocking**: real bugs, unmet spec requirements, unhandled edge cases from the original ask, security risks, failing existing tests.
+4. **Check product docs** (`03-product-docs-maintenance.mdc`):
+   - IMPLEMENTATION_PLAN / specifications still match shipped behavior.
+   - Declaring complete requires an append-only `✅ COMPLETE` row in `docs/status/feature-status.md` (missing/stale ledger = Blocking).
+   - AI code remains under `src/vs/ai/` unless a documented core exception applies (`00-vscode-fork-conventions.mdc`).
+
+5. **Classify every finding as Blocking or Optional:**
+   - **Blocking**: real bugs, unmet spec requirements, unhandled edge cases from the original ask, security risks, failing existing tests, docs drift that leaves the status ledger or plan wrong.
    - **Optional / future**: anything outside original scope, style nits, speculative enhancements, "we could also add…", non-required refactorings.
 
-5. **Render a clear verdict.** One of:
+6. **Render a clear verdict.** One of:
    - **"This feature is complete — it matches the planned scope and passes the testing bar."** (Use this when nothing Blocking was found. Do not bury this verdict under a pile of optional suggestions.)
    - **"This feature is not complete — [list of Blocking items]."** (Fix the Blocking items, then re-evaluate.)
 
-6. **List Optional items separately**, clearly labeled as optional, at the end. Do not implement them. Do not imply they are required. The user must explicitly ask for a new feature or enhancement before you implement any Optional item.
+7. **List Optional items separately**, clearly labeled as optional, at the end. Do not implement them. Do not imply they are required. The user must explicitly ask for a new feature or enhancement before you implement any Optional item.
 
 ## Anti-pattern (what NOT to do)
 
@@ -49,21 +55,18 @@ Assistant: "I reviewed it. Here are 12 things we should add:
   2) add retry logic
   3) refactor the provider registry
   4) add a settings panel
-  5) add token usage tracking
-  6) ..."
+  5) ..."
 ```
 
-If the planned scope was "add an Anthropic provider implementing the IAIProvider interface," and it does that and passes its tests, the correct response is:
+If the planned scope was "add an AI provider for Anthropic," and it does that and passes its tests, the correct response is:
 
 ```
 Assistant: "The Anthropic provider feature is complete — it matches the planned
-scope (implement IAIProvider for Anthropic) and the unit tests pass. No blocking
-issues found.
+scope and the unit tests pass. No blocking issues found.
 
 Optional future enhancements (only if you want them):
-- Add streaming support (currently request/response only)
-- Add automatic retry with exponential backoff
-- Add token-usage tracking/telemetry"
+- Add streaming support
+- Add automatic retry on rate limit"
 ```
 
 ## Important

@@ -9,8 +9,9 @@ This rule exists to counteract a known LLM failure mode: when asked to "review" 
 
 ## Before evaluating any review request
 
-1. **Re-establish the original planned scope first.** Look at: the conversation's plan/todos, any design docs, the implementation plan (`docs/IMPLEMENTATION_PLAN.md`), and the user's explicit requirements in the thread. If the scope is genuinely unclear after this, **stop and ask the user** what the planned scope was. Do not silently assume a broader scope.
+1. **Re-establish the original planned scope first.** Look at: the conversation's plan/todos, the implementation plan (`docs/IMPLEMENTATION_PLAN.md`), matching docs under `docs/specifications/` / `docs/architecture/` / `docs/api/`, `docs/status/feature-status.md`, and the user's explicit requirements in the thread. If the scope is genuinely unclear after this, **stop and ask the user** what the planned scope was. Do not silently assume a broader scope or expand into later IMPLEMENTATION_PLAN phases.
 2. **Evaluate strictly against that scope** and the testing bar in `20-testing.mdc` — not an unbounded "best possible" standard. A feature that meets its planned scope and passes its tests is done, even if a different/bigger design would have been "nicer."
+3. **Docs slice of done:** if declaring complete, product docs must still match shipped behavior and `docs/status/feature-status.md` must get an append-only `✅ COMPLETE` row (see `03-product-docs-maintenance.mdc`).
 
 ## Classify every finding as Blocking or Optional
 

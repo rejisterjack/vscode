@@ -80,3 +80,27 @@ export * from './rateLimiter';
 ## Docs-first policy (mandatory)
 
 Before modifying a core VS Code subsystem, or wiring a new contribution point (commands, keybindings, settings, menus), check the official VS Code extension/contribution API docs or an existing analogous pattern already in `src/vs/` — do not guess at undocumented internals of the upstream codebase. VS Code's internals change across upstream merges; a pattern that worked in an older VS Code version may no longer be the recommended one. If official docs are unavailable or ambiguous, say so explicitly rather than guessing silently.
+
+## Product-docs-first (mandatory for FewStepsAway features)
+
+Before implementing or modifying an **AI / product** feature, read the product docs — do not invent scope from upstream VS Code alone.
+
+1. Start at [docs/README.md](../../docs/README.md) / [docs/IMPLEMENTATION_PLAN.md](../../docs/IMPLEMENTATION_PLAN.md) and [AGENTS.md](../../AGENTS.md).
+2. Read matching docs under `docs/specifications/`, `docs/architecture/`, or `docs/api/` when they exist for the surface.
+3. Keep AI code under `src/vs/ai/` (isolation boundary above).
+4. When code changes make a product doc stale, update that **existing** doc in the same change (see `03-product-docs-maintenance.mdc`).
+
+Full maintenance workflow: `03-product-docs-maintenance.mdc`.
+
+## No unsolicited documentation
+
+Do not create **new** free-form Markdown / documentation files (sidecar `NOTES.md`, `SUMMARY.md`, `IMPLEMENTATION.md` outside the existing plan, ad-hoc plans under `docs/`, etc.) unless the user explicitly asks.
+
+**Exceptions (required maintenance — do these without waiting for a second ask):**
+
+- Update an **existing** product/engineering doc when your change makes it factually wrong (`IMPLEMENTATION_PLAN.md`, `docs/specifications/`, `docs/architecture/`, `docs/api/`).
+- Append to `docs/status/feature-status.md` when a feature is declared complete (or add a planned row when starting a user-approved new feature).
+- Add a specification under `docs/specifications/` only when implementing a user-approved / plan-aligned feature that needs one.
+
+- Prefer a concise code comment or commit message over a new doc file when something genuinely needs explaining and is not product scope.
+- If you believe a **new** non-plan doc would help, propose it in chat and wait for approval.

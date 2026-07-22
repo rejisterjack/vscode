@@ -1,0 +1,63 @@
+---
+description: Product documentation authority and maintenance workflow — keep IMPLEMENTATION_PLAN, specifications, and status ledger truthful through development; AI code stays under src/vs/ai/.
+alwaysApply: true
+---
+
+# Product docs maintenance (FewStepsAway IDE)
+
+## Authority (read before inventing scope)
+
+| Doc | Role |
+|-----|------|
+| [docs/README.md](../../docs/README.md) | Docs index / start-here |
+| [docs/IMPLEMENTATION_PLAN.md](../../docs/IMPLEMENTATION_PLAN.md) | Phased roadmap and backend/AI feature plan |
+| [docs/specifications/](../../docs/specifications/) | Technical specifications (when present for the surface) |
+| [docs/architecture/](../../docs/architecture/) | System architecture |
+| [docs/api/](../../docs/api/) | API documentation |
+| [docs/status/feature-status.md](../../docs/status/feature-status.md) | Completion ledger |
+| [AGENTS.md](../../AGENTS.md) | Day-to-day agent conventions for this fork |
+
+**North star:** open-source AI-native code editor (VS Code fork) — AI features live under `src/vs/ai/`; minimize core VS Code edits (see `00-vscode-fork-conventions.mdc`).
+
+## Product-docs-first (before coding a feature)
+
+1. Read the relevant section of `docs/IMPLEMENTATION_PLAN.md` and any matching doc under `docs/specifications/`, `docs/architecture/`, or `docs/api/`.
+2. Keep new AI functionality under `src/vs/ai/` unless an extension point is insufficient (document why if you touch core `src/vs/`).
+3. Implement only the planned scope for that feature/phase — do not expand into later phases "for later" without user approval.
+4. Map tests to that scope (`20-testing.mdc`).
+
+## Keep docs truthful (during / after implementation)
+
+When code changes behavior that product docs describe, **update the existing docs in the same change**. This is mandatory maintenance, not "unsolicited documentation."
+
+| Change | Update |
+|--------|--------|
+| New/changed AI capability, provider, or API | Matching `docs/specifications/`, `docs/api/`, or the relevant IMPLEMENTATION_PLAN section |
+| Spec / plan no longer matches shipped behavior | Fix the doc (or fix the code — do not leave drift) |
+| Feature meets planned scope + tests | Append a **new row** to `docs/status/feature-status.md` (`✅ COMPLETE`); never edit past rows |
+| Scope decision (build / defer / ban) | Update IMPLEMENTATION_PLAN and/or add a note under `docs/` only when the user approved a new permanent doc |
+
+**Do not:**
+
+- Create free-form sidecar files (`NOTES.md`, `SUMMARY.md`, ad-hoc plans) in the repo root or `docs/` — use a local scratch location only when needed for the session.
+- Mark `feature-status` complete without tests and planned scope met.
+- Scatter AI logic outside `src/vs/ai/` without documenting why.
+
+## New features
+
+1. User must explicitly ask (or approve a plan).
+2. Align with `docs/IMPLEMENTATION_PLAN.md` (update the plan section if the approved scope differs).
+3. Add or update a specification under `docs/specifications/` when the feature is non-trivial.
+4. Add a **planned** row to `docs/status/feature-status.md`.
+5. Then implement.
+
+## Definition of done for a feature (docs slice)
+
+A feature is not done until:
+
+1. Code meets the planned scope (IMPLEMENTATION_PLAN / specifications).
+2. Tests covering that scope pass (`20-testing.mdc`).
+3. Docs still match shipped behavior.
+4. `docs/status/feature-status.md` has an append-only COMPLETE row (when declaring complete).
+
+Pair with `02-definition-of-done-and-review-discipline.mdc` and the `feature-completion-review` skill for review requests.
